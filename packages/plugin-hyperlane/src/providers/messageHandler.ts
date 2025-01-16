@@ -14,7 +14,6 @@ export class MessageHandlerProvider implements Provider {
         message: Memory,
         state?: State
     ): Promise<any> {
-        // Required implementation of Provider interface
         return null;
     }
 
@@ -28,7 +27,6 @@ export class MessageHandlerProvider implements Provider {
 
     private async handleRemoteFunctionCall(message: IMessage) {
         const { functionName, args } = JSON.parse(message.body);
-        // Implementation for function execution
     }
 
     private async handleGeneralMessage(message: IMessage) {

@@ -11,7 +11,6 @@ const ChainConfigSchema = z.object({
 });
 
 export const HyperlaneEnvironmentSchema = z.object({
-    // Core Hyperlane keys
     HYPERLANE_DEPLOYER_KEY: z
         .string()
         .min(64)
@@ -33,11 +32,9 @@ export const HyperlaneEnvironmentSchema = z.object({
         .regex(/^0x[a-fA-F0-9]{64}$/)
         .describe("Private key for relayer operations"),
 
-    // Chain configurations
     ORIGIN_CHAIN: ChainConfigSchema,
     DESTINATION_CHAIN: ChainConfigSchema,
 
-    // Optional configurations with defaults
     HYPERLANE_GAS_PAYMENT_ENFORCED: z.coerce
         .boolean()
         .default(true)
@@ -60,9 +57,6 @@ export const HyperlaneEnvironmentSchema = z.object({
 
 export type HyperlaneEnvironment = z.infer<typeof HyperlaneEnvironmentSchema>;
 
-/**
- * Parse chain configuration from environment
- */
 function parseChainConfig(prefix: string): z.infer<typeof ChainConfigSchema> {
     return {
         rpc: process.env[`${prefix}_RPC`] || "",
@@ -71,9 +65,6 @@ function parseChainConfig(prefix: string): z.infer<typeof ChainConfigSchema> {
     };
 }
 
-/**
- * Load and validate environment variables
- */
 export function loadEnvironment(): HyperlaneEnvironment {
     const env = {
         HYPERLANE_DEPLOYER_KEY: process.env.HYPERLANE_DEPLOYER_KEY || "",
@@ -90,9 +81,6 @@ export function loadEnvironment(): HyperlaneEnvironment {
     return HyperlaneEnvironmentSchema.parse(env);
 }
 
-/**
- * Get environment configuration with error handling
- */
 export function getEnvironment(): HyperlaneEnvironment {
     try {
         return loadEnvironment();

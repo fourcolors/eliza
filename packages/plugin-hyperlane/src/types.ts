@@ -14,6 +14,5 @@ export interface IMessage {
 }
 
 export interface MultiProvider {
-    // Add required MultiProvider interface properties
     getProvider: (chainId: string) => any;
 }

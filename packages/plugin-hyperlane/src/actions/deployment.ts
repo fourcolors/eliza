@@ -1,6 +1,3 @@
-/**
- * Actions for deploying Hyperlane infrastructure on new chains
- */
 import { Action, IAgentRuntime, Memory } from "@elizaos/core";
 import { ChainMap, ChainMetadata } from "@hyperlane-xyz/sdk";
 import { ProtocolType } from "@hyperlane-xyz/utils";

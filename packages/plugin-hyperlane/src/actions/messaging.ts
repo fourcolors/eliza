@@ -1,6 +1,3 @@
-/**
- * Actions for cross-chain messaging and remote function execution via Hyperlane
- */
 import { Action, IAgentRuntime, Memory } from "@elizaos/core";
 
 export const messagingActions: Action[] = [
