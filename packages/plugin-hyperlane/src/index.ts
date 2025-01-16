@@ -6,7 +6,9 @@ import {
     MultiProvider as HyperlaneMultiProvider,
 } from "@hyperlane-xyz/sdk";
 import { ProtocolType } from "@hyperlane-xyz/utils";
+import { deploymentActions } from "./actions/deployment";
 import { messagingActions } from "./actions/messaging";
+import { warpActions } from "./actions/warp";
 import { getEnvironment } from "./environment";
 import { MessageHandlerProvider } from "./providers/messageHandler";
 import { HyperlaneConfig } from "./types";
@@ -17,7 +19,11 @@ export class HyperlanePlugin implements Plugin {
     public description = "Hyperlane integration plugin for ElizaOS agents";
     public name = "hyperlane";
     public providers: Provider[] = [];
-    public actions = messagingActions;
+    public actions = [
+        ...messagingActions,
+        ...warpActions,
+        ...deploymentActions,
+    ];
 
     constructor(config: HyperlaneConfig) {
         this.config = config;

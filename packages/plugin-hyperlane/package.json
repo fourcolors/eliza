@@ -24,7 +24,10 @@
         "ts-jest": "^29.1.0",
         "@typescript-eslint/eslint-plugin": "^6.0.0",
         "@typescript-eslint/parser": "^6.0.0",
-        "eslint": "^8.0.0"
+        "eslint": "^8.0.0",
+        "babel-jest": "^29.5.0",
+        "@babel/core": "^7.0.0",
+        "@babel/preset-env": "^7.0.0"
     },
     "peerDependencies": {
         "@elizaos/core": "workspace:*"

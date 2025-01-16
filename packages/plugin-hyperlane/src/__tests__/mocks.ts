@@ -1,21 +1,26 @@
 import { jest } from "@jest/globals";
 
+const hyperlane = {
+    core: {
+        messagingService: {
+            dispatch: jest
+                .fn()
+                .mockImplementation(() =>
+                    Promise.resolve({ id: "test-id", status: "success" })
+                ),
+            getMessageStatus: jest
+                .fn()
+                .mockImplementation(() => Promise.resolve("DELIVERED")),
+        },
+    },
+};
+
 export const mockContext = {
     plugins: {
-        get: jest.fn().mockReturnValue({
-            core: {
-                messagingService: {
-                    dispatch: jest
-                        .fn()
-                        .mockResolvedValue({
-                            id: "0x123",
-                            status: "dispatched",
-                        }),
-                    getMessageStatus: jest.fn().mockResolvedValue("DELIVERED"),
-                },
-            },
-        }),
+        get: jest.fn(),
+        hyperlane,
     },
+    registerAction: jest.fn(),
     registerActions: jest.fn(),
     registerProvider: jest.fn(),
 };
