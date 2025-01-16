@@ -1,4 +1,10 @@
-import { IAgentRuntime, Plugin, Provider } from "@elizaos/core";
+import {
+    IAgentRuntime,
+    Plugin,
+    Provider,
+    Service,
+    ServiceType,
+} from "@elizaos/core";
 import {
     ChainMap,
     ChainMetadata,
@@ -13,26 +19,26 @@ import { getEnvironment } from "./environment";
 import { MessageHandlerProvider } from "./providers/messageHandler";
 import { HyperlaneConfig } from "./types";
 
-export class HyperlanePlugin implements Plugin {
-    private config: HyperlaneConfig;
-    private core!: HyperlaneCore;
-    public description = "Hyperlane integration plugin for ElizaOS agents";
-    public name = "hyperlane";
-    public providers: Provider[] = [];
-    public actions = [
-        ...messagingActions,
-        ...warpActions,
-        ...deploymentActions,
-    ];
+declare module "@elizaos/core" {
+    export enum ServiceType {
+        HYPERLANE = "hyperlane",
+    }
+}
 
-    constructor(config: HyperlaneConfig) {
-        this.config = config;
+class HyperlaneService extends Service {
+    private core!: HyperlaneCore;
+    private providers: Provider[] = [];
+
+    constructor(private runtime: IAgentRuntime) {
+        super();
     }
 
-    async init(runtime: IAgentRuntime): Promise<void> {
-        const env = getEnvironment();
+    static get serviceType(): ServiceType {
+        return ServiceType.HYPERLANE;
+    }
 
-        // Create chain metadata map according to Hyperlane's requirements
+    async initialize(): Promise<void> {
+        const env = getEnvironment();
         const chainConfig: ChainMap<ChainMetadata> = {
             [env.ORIGIN_CHAIN.name]: {
                 name: env.ORIGIN_CHAIN.name,
@@ -49,25 +55,35 @@ export class HyperlanePlugin implements Plugin {
         };
 
         const multiProvider = new HyperlaneMultiProvider(chainConfig);
+        this.core = new HyperlaneCore({}, multiProvider);
 
-        this.core = new HyperlaneCore(
-            {}, // contractsMap - will be populated by SDK
-            multiProvider
-        );
-
-        // Register all actions individually
-        for (const action of this.actions) {
-            runtime.registerAction(action);
-        }
-
-        // Add message handler provider to plugin's providers
         const messageHandler = new MessageHandlerProvider(this.core);
         this.providers.push(messageHandler);
     }
 
-    getConfig(): HyperlaneConfig {
-        return this.config;
+    getCore(): HyperlaneCore {
+        return this.core;
+    }
+
+    getProviders(): Provider[] {
+        return this.providers;
     }
 }
 
-export default HyperlanePlugin;
+const createHyperlanePlugin = (
+    config: HyperlaneConfig,
+    runtime: IAgentRuntime
+): Plugin => {
+    const hyperlaneService = new HyperlaneService(runtime);
+    const actions = [...messagingActions, ...warpActions, ...deploymentActions];
+
+    return {
+        description: "Hyperlane integration plugin for ElizaOS agents",
+        name: "hyperlane",
+        providers: hyperlaneService.getProviders(),
+        actions,
+        services: [hyperlaneService],
+    };
+};
+
+export default createHyperlanePlugin;
