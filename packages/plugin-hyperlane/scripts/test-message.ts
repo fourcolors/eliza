@@ -1,26 +1,27 @@
 import { IAgentRuntime } from "@elizaos/core";
-import { HyperlanePlugin } from "../src";
+import createHyperlanePlugin from "../src";
 import { messagingActions } from "../src/actions/messaging";
 
 async function testMessage() {
-    const plugin = new HyperlanePlugin({
-        originChain: "ethereum",
-        destinationChain: "optimism",
-        rpcUrls: {
-            ethereum: process.env.ORIGIN_CHAIN_RPC || "",
-            optimism: process.env.DESTINATION_CHAIN_RPC || "",
-        },
-    });
-
     const runtime = {
-        plugins: {
-            get: () => plugin,
-        },
+        plugins: [],
         registerActions: () => {},
         registerProvider: () => {},
     } as unknown as IAgentRuntime;
 
-    await plugin.init(runtime);
+    const plugin = createHyperlanePlugin(
+        {
+            originChain: "ethereum",
+            destinationChain: "optimism",
+            rpcUrls: {
+                ethereum: process.env.ORIGIN_CHAIN_RPC || "",
+                optimism: process.env.DESTINATION_CHAIN_RPC || "",
+            },
+        },
+        runtime
+    );
+
+    runtime.plugins.push(plugin);
 
     const result = await messagingActions[0].handler(runtime, {
         userId: "123e4567-e89b-12d3-a456-426614174000",

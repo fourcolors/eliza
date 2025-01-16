@@ -1,6 +1,6 @@
-import { IAgentRuntime, Memory } from "@elizaos/core";
+import { IAgentRuntime, Memory, Plugin } from "@elizaos/core";
 import { messagingActions } from "../actions/messaging";
-import { HyperlanePlugin } from "../index";
+import createHyperlanePlugin from "../index";
 import { mockContext, mockMessage } from "./mocks";
 
 interface MessageResult {
@@ -16,22 +16,23 @@ interface StatusResult {
 }
 
 describe("Hyperlane Messaging", () => {
-    let plugin: HyperlanePlugin;
+    let plugin: Plugin;
 
     beforeEach(() => {
-        plugin = new HyperlanePlugin({
-            originChain: "ethereum",
-            destinationChain: "optimism",
-            rpcUrls: {
-                ethereum: "http://localhost:8545",
-                optimism: "http://localhost:8546",
+        plugin = createHyperlanePlugin(
+            {
+                originChain: "ethereum",
+                destinationChain: "optimism",
+                rpcUrls: {
+                    ethereum: "http://localhost:8545",
+                    optimism: "http://localhost:8546",
+                },
             },
-        });
+            mockContext as unknown as IAgentRuntime
+        );
     });
 
     test("should send cross-chain message", async () => {
-        await plugin.init(mockContext as unknown as IAgentRuntime);
-
         const sendAction = messagingActions.find(
             (action) => action.name === "SEND_CROSS_CHAIN_MESSAGE"
         );
@@ -59,8 +60,6 @@ describe("Hyperlane Messaging", () => {
     });
 
     test("should check message status", async () => {
-        await plugin.init(mockContext as unknown as IAgentRuntime);
-
         const checkAction = messagingActions.find(
             (action) => action.name === "CHECK_MESSAGE_STATUS"
         );
