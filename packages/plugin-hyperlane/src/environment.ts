@@ -54,24 +54,57 @@ export const HyperlaneEnvironmentSchema = z.object({
 export type HyperlaneEnvironment = z.infer<typeof HyperlaneEnvironmentSchema>;
 
 function parseChainConfig(prefix: string): z.infer<typeof ChainConfigSchema> {
+    const rpc = process.env[`${prefix}_RPC`];
+    const chainId = process.env[`${prefix}_CHAIN_ID`];
+    const name = process.env[`${prefix}_NAME`];
+
+    if (!rpc) {
+        throw new Error(`Missing required environment variable ${prefix}_RPC`);
+    }
+    if (!chainId) {
+        throw new Error(
+            `Missing required environment variable ${prefix}_CHAIN_ID`
+        );
+    }
+    if (!name) {
+        throw new Error(`Missing required environment variable ${prefix}_NAME`);
+    }
+
+    const parsedChainId = parseInt(chainId);
+    if (isNaN(parsedChainId) || parsedChainId <= 0) {
+        throw new Error(`Invalid chain ID in ${prefix}_CHAIN_ID: ${chainId}`);
+    }
+
     return {
-        rpc: process.env[`${prefix}_RPC`] || "",
-        chainId: parseInt(process.env[`${prefix}_CHAIN_ID`] || "0"),
-        name: process.env[`${prefix}_NAME`] || "",
+        rpc,
+        chainId: parsedChainId,
+        name,
     };
 }
 
 export function loadEnvironment(): HyperlaneEnvironment {
+    const deployerKey = process.env.HYPERLANE_DEPLOYER_KEY;
+    const validatorKey = process.env.HYPERLANE_VALIDATOR_KEY;
+    const relayerKey = process.env.HYPERLANE_RELAYER_KEY;
+
+    if (!deployerKey || !validatorKey || !relayerKey) {
+        throw new Error("Missing required Hyperlane keys");
+    }
+
     const env = {
-        HYPERLANE_DEPLOYER_KEY: process.env.HYPERLANE_DEPLOYER_KEY || "",
-        HYPERLANE_VALIDATOR_KEY: process.env.HYPERLANE_VALIDATOR_KEY || "",
-        HYPERLANE_RELAYER_KEY: process.env.HYPERLANE_RELAYER_KEY || "",
+        HYPERLANE_DEPLOYER_KEY: deployerKey,
+        HYPERLANE_VALIDATOR_KEY: validatorKey,
+        HYPERLANE_RELAYER_KEY: relayerKey,
         ORIGIN_CHAIN: parseChainConfig("ORIGIN"),
         DESTINATION_CHAIN: parseChainConfig("DESTINATION"),
         HYPERLANE_GAS_PAYMENT_ENFORCED:
-            process.env.HYPERLANE_GAS_PAYMENT_ENFORCED,
-        HYPERLANE_DEFAULT_GAS_LIMIT: process.env.HYPERLANE_DEFAULT_GAS_LIMIT,
-        HYPERLANE_TIMEOUT_SECONDS: process.env.HYPERLANE_TIMEOUT_SECONDS,
+            process.env.HYPERLANE_GAS_PAYMENT_ENFORCED === "true",
+        HYPERLANE_DEFAULT_GAS_LIMIT: parseInt(
+            process.env.HYPERLANE_DEFAULT_GAS_LIMIT || "100000"
+        ),
+        HYPERLANE_TIMEOUT_SECONDS: parseInt(
+            process.env.HYPERLANE_TIMEOUT_SECONDS || "300"
+        ),
     };
 
     return HyperlaneEnvironmentSchema.parse(env);

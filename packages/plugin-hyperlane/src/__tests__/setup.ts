@@ -1,6 +1,5 @@
 import { vi } from "vitest";
 
-// Mock ES modules
 vi.mock("@hyperlane-xyz/sdk", () => ({
     HyperlaneCore: vi.fn(),
     MultiProvider: vi.fn(),
@@ -12,7 +11,6 @@ vi.mock("@hyperlane-xyz/utils", () => ({
     },
 }));
 
-// Mock environment configuration
 vi.mock("../environment", () => ({
     getEnvironment: vi.fn().mockReturnValue({
         HYPERLANE_DEPLOYER_KEY: "0x" + "1".repeat(64),
