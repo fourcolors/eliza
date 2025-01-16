@@ -22,11 +22,17 @@ async function testMessage() {
 
     await plugin.init(runtime);
 
-    const result = await messagingActions[0].execute(runtime, {
-        destinationChain: "optimism",
-        destinationAddress: "0x123...",
-        messageBody: "Test message",
-        gasAmount: 100000,
+    const result = await messagingActions[0].handler(runtime, {
+        userId: "123e4567-e89b-12d3-a456-426614174000",
+        agentId: "123e4567-e89b-12d3-a456-426614174001",
+        roomId: "123e4567-e89b-12d3-a456-426614174002",
+        content: {
+            text: "Send cross-chain message",
+            destinationChain: "optimism",
+            destinationAddress: "0x123...",
+            messageBody: "Test message",
+            gasAmount: 100000,
+        },
     });
 
     console.log("Message result:", result);
