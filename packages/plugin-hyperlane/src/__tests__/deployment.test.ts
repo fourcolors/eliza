@@ -1,5 +1,5 @@
 import { Memory } from "@elizaos/core";
-import { jest } from "@jest/globals";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { deploymentActions } from "../actions/deployment";
 
 // Mock the ProtocolType enum
@@ -12,16 +12,16 @@ describe("Deployment Actions", () => {
         plugins: {
             hyperlane: {
                 core: {
-                    deployCore: jest.fn() as jest.Mock<any>,
-                    deployValidators: jest.fn() as jest.Mock<any>,
-                    deployRelayer: jest.fn() as jest.Mock<any>,
+                    deployCore: vi.fn(),
+                    deployValidators: vi.fn(),
+                    deployRelayer: vi.fn(),
                 },
             },
         },
     };
 
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
         mockRuntime.plugins.hyperlane.core.deployCore.mockResolvedValue({
             addresses: {
                 mailbox: "0x123",

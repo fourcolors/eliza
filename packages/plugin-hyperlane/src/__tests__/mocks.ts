@@ -1,29 +1,4 @@
-import { jest } from "@jest/globals";
-
-const hyperlane = {
-    core: {
-        messagingService: {
-            dispatch: jest
-                .fn()
-                .mockImplementation(() =>
-                    Promise.resolve({ id: "test-id", status: "success" })
-                ),
-            getMessageStatus: jest
-                .fn()
-                .mockImplementation(() => Promise.resolve("DELIVERED")),
-        },
-    },
-};
-
-export const mockContext = {
-    plugins: {
-        get: jest.fn(),
-        hyperlane,
-    },
-    registerAction: jest.fn(),
-    registerActions: jest.fn(),
-    registerProvider: jest.fn(),
-};
+import { vi } from "vitest";
 
 export const mockMessage = {
     id: "0x123",
@@ -33,4 +8,24 @@ export const mockMessage = {
         args: [],
     }),
     status: "DELIVERED",
+};
+
+export const mockContext = {
+    plugins: {
+        get: vi.fn(),
+        hyperlane: {
+            core: {
+                messagingService: {
+                    dispatch: vi.fn().mockResolvedValue({
+                        id: "test-id",
+                        status: "success",
+                    }),
+                    getMessageStatus: vi.fn().mockResolvedValue("DELIVERED"),
+                },
+            },
+        },
+    },
+    registerAction: vi.fn(),
+    registerActions: vi.fn(),
+    registerProvider: vi.fn(),
 };

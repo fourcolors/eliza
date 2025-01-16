@@ -1,4 +1,5 @@
 import { IAgentRuntime, Memory, Plugin } from "@elizaos/core";
+import { beforeEach, describe, expect, test } from "vitest";
 import { messagingActions } from "../actions/messaging";
 import createHyperlanePlugin from "../index";
 import { mockContext, mockMessage } from "./mocks";

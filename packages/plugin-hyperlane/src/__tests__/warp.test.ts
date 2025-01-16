@@ -1,5 +1,5 @@
 import { IAgentRuntime, Memory, Plugin } from "@elizaos/core";
-import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { warpActions } from "../actions/warp";
 
 interface WarpTransferParams {
@@ -33,8 +33,8 @@ interface MockHyperlanePlugin extends Plugin {
     description: string;
     core: {
         warpService: {
-            transfer: jest.Mock;
-            deployRoute: jest.Mock;
+            transfer: ReturnType<typeof vi.fn>;
+            deployRoute: ReturnType<typeof vi.fn>;
         };
     };
 }
@@ -56,11 +56,11 @@ describe("Warp Actions", () => {
             description: "Mock Hyperlane plugin for testing",
             core: {
                 warpService: {
-                    transfer: jest.fn().mockImplementation(async () => ({
+                    transfer: vi.fn().mockImplementation(async () => ({
                         id: "0x123",
                         status: "initiated",
                     })),
-                    deployRoute: jest.fn().mockImplementation(async () => ({
+                    deployRoute: vi.fn().mockImplementation(async () => ({
                         address: "0x456",
                         status: "deployed",
                     })),
@@ -69,7 +69,7 @@ describe("Warp Actions", () => {
         };
 
         mockRuntime = {
-            getSetting: jest.fn((key: string): string | null => {
+            getSetting: vi.fn((key: string): string | null => {
                 const settings: { [key: string]: string } = {
                     HYPERLANE_DEPLOYER_KEY: "0x1234567890abcdef",
                     HYPERLANE_VALIDATOR_KEY: "0xabcdef1234567890",
@@ -105,7 +105,7 @@ describe("Warp Actions", () => {
             });
 
             it("should fail validation when relayer key is missing", async () => {
-                jest.spyOn(mockRuntime, "getSetting").mockImplementation(
+                vi.spyOn(mockRuntime, "getSetting").mockImplementation(
                     (key: string): string | null =>
                         key === "HYPERLANE_RELAYER_KEY" ? null : "0x1234"
                 );
@@ -117,7 +117,7 @@ describe("Warp Actions", () => {
             });
 
             it("should fail validation when relayer key is invalid format", async () => {
-                jest.spyOn(mockRuntime, "getSetting").mockImplementation(
+                vi.spyOn(mockRuntime, "getSetting").mockImplementation(
                     (key: string): string | null =>
                         key === "HYPERLANE_RELAYER_KEY"
                             ? "invalid-key"
@@ -141,7 +141,7 @@ describe("Warp Actions", () => {
             });
 
             it("should fail validation when validator key is missing", async () => {
-                jest.spyOn(mockRuntime, "getSetting").mockImplementation(
+                vi.spyOn(mockRuntime, "getSetting").mockImplementation(
                     (key: string): string | null =>
                         key === "HYPERLANE_VALIDATOR_KEY" ? null : "0x1234"
                 );
@@ -153,7 +153,7 @@ describe("Warp Actions", () => {
             });
 
             it("should fail validation when validator key is invalid format", async () => {
-                jest.spyOn(mockRuntime, "getSetting").mockImplementation(
+                vi.spyOn(mockRuntime, "getSetting").mockImplementation(
                     (key: string): string | null =>
                         key === "HYPERLANE_VALIDATOR_KEY"
                             ? "invalid-key"
@@ -169,7 +169,7 @@ describe("Warp Actions", () => {
 
         describe("Base Hyperlane config validation", () => {
             it("should fail validation when deployer key is missing", async () => {
-                jest.spyOn(mockRuntime, "getSetting").mockImplementation(
+                vi.spyOn(mockRuntime, "getSetting").mockImplementation(
                     (key: string): string | null =>
                         key === "HYPERLANE_DEPLOYER_KEY" ? null : "0x1234"
                 );
@@ -181,7 +181,7 @@ describe("Warp Actions", () => {
             });
 
             it("should fail validation when RPCs are missing", async () => {
-                jest.spyOn(mockRuntime, "getSetting").mockImplementation(
+                vi.spyOn(mockRuntime, "getSetting").mockImplementation(
                     (key: string): string | null =>
                         key.includes("RPC") ? null : "0x1234"
                 );
@@ -193,7 +193,7 @@ describe("Warp Actions", () => {
             });
 
             it("should fail validation when chain IDs are missing", async () => {
-                jest.spyOn(mockRuntime, "getSetting").mockImplementation(
+                vi.spyOn(mockRuntime, "getSetting").mockImplementation(
                     (key: string): string | null =>
                         key.includes("CHAIN_ID") ? null : "0x1234"
                 );

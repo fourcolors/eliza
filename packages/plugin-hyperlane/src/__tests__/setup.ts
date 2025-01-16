@@ -1,18 +1,20 @@
+import { vi } from "vitest";
+
 // Mock ES modules
-jest.mock('@hyperlane-xyz/sdk', () => ({
-    HyperlaneCore: jest.fn(),
-    MultiProvider: jest.fn(),
+vi.mock("@hyperlane-xyz/sdk", () => ({
+    HyperlaneCore: vi.fn(),
+    MultiProvider: vi.fn(),
 }));
 
-jest.mock('@hyperlane-xyz/utils', () => ({
+vi.mock("@hyperlane-xyz/utils", () => ({
     ProtocolType: {
         Ethereum: 1,
     },
 }));
 
 // Mock environment configuration
-jest.mock('./src/environment', () => ({
-    getEnvironment: jest.fn().mockReturnValue({
+vi.mock("../environment", () => ({
+    getEnvironment: vi.fn().mockReturnValue({
         HYPERLANE_DEPLOYER_KEY: "0x" + "1".repeat(64),
         HYPERLANE_VALIDATOR_KEY: "0x" + "2".repeat(64),
         HYPERLANE_RELAYER_KEY: "0x" + "3".repeat(64),
