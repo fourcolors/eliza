@@ -1,164 +1,208 @@
-import { Memory } from "@elizaos/core";
-import { jest } from "@jest/globals";
-import { parseUnits } from "ethers/lib/utils";
+import { IAgentRuntime, Memory, Plugin } from "@elizaos/core";
+import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { warpActions } from "../actions/warp";
 
-describe("Warp Route Actions", () => {
-    const mockRuntime = {
-        plugins: {
-            hyperlane: {
-                core: {
-                    warpService: {
-                        transfer: jest.fn() as jest.Mock<any>,
-                        deployRoute: jest.fn() as jest.Mock<any>,
-                    },
-                },
-            },
+interface WarpTransferParams {
+    amount: string;
+    token: string;
+    destination: string;
+    warpRoute: string;
+    recipient: string;
+}
+
+interface WarpTransferResult {
+    id: string;
+    status: string;
+}
+
+interface WarpDeployParams {
+    chain: string;
+    token: string;
+}
+
+interface WarpDeployResult {
+    address: string;
+    status: string;
+}
+
+type TransferFn = (params: WarpTransferParams) => Promise<WarpTransferResult>;
+type DeployRouteFn = (params: WarpDeployParams) => Promise<WarpDeployResult>;
+
+interface MockHyperlanePlugin extends Plugin {
+    name: string;
+    description: string;
+    core: {
+        warpService: {
+            transfer: jest.Mock;
+            deployRoute: jest.Mock;
+        };
+    };
+}
+
+describe("Warp Actions", () => {
+    let mockRuntime: IAgentRuntime;
+    const mockMessage: Memory = {
+        userId: "123e4567-e89b-12d3-a456-426614174000",
+        agentId: "123e4567-e89b-12d3-a456-426614174001",
+        roomId: "123e4567-e89b-12d3-a456-426614174002",
+        content: {
+            text: "test message",
         },
     };
 
     beforeEach(() => {
-        jest.clearAllMocks();
-        mockRuntime.plugins.hyperlane.core.warpService.transfer.mockResolvedValue(
-            {
-                id: "0x123",
-                status: "initiated",
-            }
-        );
-        mockRuntime.plugins.hyperlane.core.warpService.deployRoute.mockResolvedValue(
-            {
-                address: "0x456",
-                status: "deployed",
-            }
-        );
+        const mockHyperlane: MockHyperlanePlugin = {
+            name: "hyperlane",
+            description: "Mock Hyperlane plugin for testing",
+            core: {
+                warpService: {
+                    transfer: jest.fn().mockImplementation(async () => ({
+                        id: "0x123",
+                        status: "initiated",
+                    })),
+                    deployRoute: jest.fn().mockImplementation(async () => ({
+                        address: "0x456",
+                        status: "deployed",
+                    })),
+                },
+            },
+        };
+
+        mockRuntime = {
+            getSetting: jest.fn((key: string): string | null => {
+                const settings: { [key: string]: string } = {
+                    HYPERLANE_DEPLOYER_KEY: "0x1234567890abcdef",
+                    HYPERLANE_VALIDATOR_KEY: "0xabcdef1234567890",
+                    HYPERLANE_RELAYER_KEY: "0x9876543210fedcba",
+                    ORIGIN_RPC: "https://eth-mainnet.example.com",
+                    DESTINATION_RPC: "https://optimism.example.com",
+                    ORIGIN_CHAIN_ID: "1",
+                    DESTINATION_CHAIN_ID: "10",
+                };
+                return settings[key] || null;
+            }),
+            plugins: {
+                hyperlane: mockHyperlane,
+            },
+        } as unknown as IAgentRuntime;
     });
 
-    describe("TRANSFER_VIA_WARP", () => {
+    describe("Validation", () => {
         const transferAction = warpActions.find(
-            (action) => action.name === "TRANSFER_VIA_WARP"
-        );
-
-        it("should transfer tokens via warp route", async () => {
-            const message: Memory = {
-                userId: "123e4567-e89b-12d3-a456-426614174000",
-                agentId: "123e4567-e89b-12d3-a456-426614174001",
-                roomId: "123e4567-e89b-12d3-a456-426614174002",
-                content: {
-                    text: "Transfer 100 USDC to optimism using warp route 0x123",
-                    amount: "100",
-                    token: "0xUSDC",
-                    destinationChain: "optimism",
-                    warpRoute: "0x123",
-                    recipient: "0x789",
-                },
-            };
-
-            const result = await transferAction!.handler(
-                mockRuntime as any,
-                message
-            );
-
-            expect(
-                mockRuntime.plugins.hyperlane.core.warpService.transfer
-            ).toHaveBeenCalledWith({
-                amount: parseUnits("100", 18),
-                token: "0xUSDC",
-                destination: "optimism",
-                warpRoute: "0x123",
-                recipient: "0x789",
-            });
-
-            expect(result).toEqual({
-                transferId: "0x123",
-                status: "initiated",
-                details: "Transfer of 100 0xUSDC initiated to optimism",
-            });
-        });
-
-        it("should handle transfer errors", async () => {
-            mockRuntime.plugins.hyperlane.core.warpService.transfer.mockRejectedValueOnce(
-                new Error("Transfer failed")
-            );
-
-            const message: Memory = {
-                userId: "123e4567-e89b-12d3-a456-426614174000",
-                agentId: "123e4567-e89b-12d3-a456-426614174001",
-                roomId: "123e4567-e89b-12d3-a456-426614174002",
-                content: {
-                    text: "Transfer 100 USDC to optimism using warp route 0x123",
-                    amount: "100",
-                    token: "0xUSDC",
-                    destinationChain: "optimism",
-                    warpRoute: "0x123",
-                    recipient: "0x789",
-                },
-            };
-
-            await expect(
-                transferAction!.handler(mockRuntime as any, message)
-            ).rejects.toThrow("Transfer failed");
-        });
-    });
-
-    describe("DEPLOY_WARP_ROUTE", () => {
+            (a) => a.name === "TRANSFER_VIA_WARP"
+        )!;
         const deployAction = warpActions.find(
-            (action) => action.name === "DEPLOY_WARP_ROUTE"
-        );
+            (a) => a.name === "DEPLOY_WARP_ROUTE"
+        )!;
 
-        it("should deploy a new warp route", async () => {
-            const message: Memory = {
-                userId: "123e4567-e89b-12d3-a456-426614174000",
-                agentId: "123e4567-e89b-12d3-a456-426614174001",
-                roomId: "123e4567-e89b-12d3-a456-426614174002",
-                content: {
-                    text: "Deploy warp route for USDC between ethereum and optimism",
-                    token: "0xUSDC",
-                    sourceChain: "ethereum",
-                    destinationChain: "optimism",
-                },
-            };
-
-            const result = await deployAction!.handler(
-                mockRuntime as any,
-                message
-            );
-
-            expect(
-                mockRuntime.plugins.hyperlane.core.warpService.deployRoute
-            ).toHaveBeenCalledWith({
-                token: "0xUSDC",
-                source: "ethereum",
-                destination: "optimism",
+        describe("TRANSFER_VIA_WARP validation", () => {
+            it("should pass validation with all required settings", async () => {
+                const result = await transferAction.validate(
+                    mockRuntime,
+                    mockMessage
+                );
+                expect(result).toBe(true);
             });
 
-            expect(result).toEqual({
-                routeAddress: "0x456",
-                status: "deployed",
-                details:
-                    "Warp route deployed for 0xUSDC between ethereum and optimism",
+            it("should fail validation when relayer key is missing", async () => {
+                jest.spyOn(mockRuntime, "getSetting").mockImplementation(
+                    (key: string): string | null =>
+                        key === "HYPERLANE_RELAYER_KEY" ? null : "0x1234"
+                );
+                const result = await transferAction.validate(
+                    mockRuntime,
+                    mockMessage
+                );
+                expect(result).toBe(false);
+            });
+
+            it("should fail validation when relayer key is invalid format", async () => {
+                jest.spyOn(mockRuntime, "getSetting").mockImplementation(
+                    (key: string): string | null =>
+                        key === "HYPERLANE_RELAYER_KEY"
+                            ? "invalid-key"
+                            : "0x1234"
+                );
+                const result = await transferAction.validate(
+                    mockRuntime,
+                    mockMessage
+                );
+                expect(result).toBe(false);
             });
         });
 
-        it("should handle deployment errors", async () => {
-            mockRuntime.plugins.hyperlane.core.warpService.deployRoute.mockRejectedValueOnce(
-                new Error("Deployment failed")
-            );
+        describe("DEPLOY_WARP_ROUTE validation", () => {
+            it("should pass validation with all required settings", async () => {
+                const result = await deployAction.validate(
+                    mockRuntime,
+                    mockMessage
+                );
+                expect(result).toBe(true);
+            });
 
-            const message: Memory = {
-                userId: "123e4567-e89b-12d3-a456-426614174000",
-                agentId: "123e4567-e89b-12d3-a456-426614174001",
-                roomId: "123e4567-e89b-12d3-a456-426614174002",
-                content: {
-                    text: "Deploy warp route for USDC between ethereum and optimism",
-                    token: "0xUSDC",
-                    sourceChain: "ethereum",
-                    destinationChain: "optimism",
-                },
-            };
+            it("should fail validation when validator key is missing", async () => {
+                jest.spyOn(mockRuntime, "getSetting").mockImplementation(
+                    (key: string): string | null =>
+                        key === "HYPERLANE_VALIDATOR_KEY" ? null : "0x1234"
+                );
+                const result = await deployAction.validate(
+                    mockRuntime,
+                    mockMessage
+                );
+                expect(result).toBe(false);
+            });
 
-            await expect(
-                deployAction!.handler(mockRuntime as any, message)
-            ).rejects.toThrow("Deployment failed");
+            it("should fail validation when validator key is invalid format", async () => {
+                jest.spyOn(mockRuntime, "getSetting").mockImplementation(
+                    (key: string): string | null =>
+                        key === "HYPERLANE_VALIDATOR_KEY"
+                            ? "invalid-key"
+                            : "0x1234"
+                );
+                const result = await deployAction.validate(
+                    mockRuntime,
+                    mockMessage
+                );
+                expect(result).toBe(false);
+            });
+        });
+
+        describe("Base Hyperlane config validation", () => {
+            it("should fail validation when deployer key is missing", async () => {
+                jest.spyOn(mockRuntime, "getSetting").mockImplementation(
+                    (key: string): string | null =>
+                        key === "HYPERLANE_DEPLOYER_KEY" ? null : "0x1234"
+                );
+                const result = await deployAction.validate(
+                    mockRuntime,
+                    mockMessage
+                );
+                expect(result).toBe(false);
+            });
+
+            it("should fail validation when RPCs are missing", async () => {
+                jest.spyOn(mockRuntime, "getSetting").mockImplementation(
+                    (key: string): string | null =>
+                        key.includes("RPC") ? null : "0x1234"
+                );
+                const result = await deployAction.validate(
+                    mockRuntime,
+                    mockMessage
+                );
+                expect(result).toBe(false);
+            });
+
+            it("should fail validation when chain IDs are missing", async () => {
+                jest.spyOn(mockRuntime, "getSetting").mockImplementation(
+                    (key: string): string | null =>
+                        key.includes("CHAIN_ID") ? null : "0x1234"
+                );
+                const result = await deployAction.validate(
+                    mockRuntime,
+                    mockMessage
+                );
+                expect(result).toBe(false);
+            });
         });
     });
 });

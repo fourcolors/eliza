@@ -4,6 +4,45 @@
 import { Action, IAgentRuntime, Memory } from "@elizaos/core";
 import { parseUnits } from "ethers/lib/utils";
 
+const validateHyperlaneConfig = async (runtime: IAgentRuntime) => {
+    const deployerKey = runtime.getSetting("HYPERLANE_DEPLOYER_KEY");
+    const originRpc = runtime.getSetting("ORIGIN_RPC");
+    const destinationRpc = runtime.getSetting("DESTINATION_RPC");
+    const originChainId = runtime.getSetting("ORIGIN_CHAIN_ID");
+    const destinationChainId = runtime.getSetting("DESTINATION_CHAIN_ID");
+
+    return (
+        typeof deployerKey === "string" &&
+        deployerKey.startsWith("0x") &&
+        typeof originRpc === "string" &&
+        typeof destinationRpc === "string" &&
+        typeof originChainId === "string" &&
+        typeof destinationChainId === "string"
+    );
+};
+
+const validateWarpTransfer = async (runtime: IAgentRuntime) => {
+    const baseValid = await validateHyperlaneConfig(runtime);
+    const relayerKey = runtime.getSetting("HYPERLANE_RELAYER_KEY");
+
+    return (
+        baseValid &&
+        typeof relayerKey === "string" &&
+        relayerKey.startsWith("0x")
+    );
+};
+
+const validateWarpDeploy = async (runtime: IAgentRuntime) => {
+    const baseValid = await validateHyperlaneConfig(runtime);
+    const validatorKey = runtime.getSetting("HYPERLANE_VALIDATOR_KEY");
+
+    return (
+        baseValid &&
+        typeof validatorKey === "string" &&
+        validatorKey.startsWith("0x")
+    );
+};
+
 export const warpActions: Action[] = [
     {
         name: "TRANSFER_VIA_WARP",
@@ -19,7 +58,7 @@ export const warpActions: Action[] = [
                 },
             ],
         ],
-        validate: async () => true,
+        validate: validateWarpTransfer,
         handler: async (runtime: IAgentRuntime, message: Memory) => {
             const params = message.content as unknown as {
                 amount: string;
@@ -60,7 +99,7 @@ export const warpActions: Action[] = [
                 },
             ],
         ],
-        validate: async () => true,
+        validate: validateWarpDeploy,
         handler: async (runtime: IAgentRuntime, message: Memory) => {
             const params = message.content as unknown as {
                 token: string;
