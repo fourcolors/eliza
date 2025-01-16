@@ -1,9 +1,5 @@
-/**
- * Environment configuration for Hyperlane plugin
- */
 import { z } from "zod";
 
-// Chain configuration schema
 const ChainConfigSchema = z.object({
     rpc: z.string().url(),
     chainId: z.number(),
