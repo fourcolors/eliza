@@ -9,21 +9,23 @@
         "build": "tsc",
         "test": "vitest run",
         "test:watch": "vitest",
-        "lint": "eslint src/**/*.ts"
+        "lint": "eslint src/**/*.ts",
+        "dev": ""
     },
     "dependencies": {
         "@elizaos/core": "workspace:*",
-        "@hyperlane-xyz/sdk": "^3.7.0",
+        "@hyperlane-xyz/cli": "^8.2.0",
         "@hyperlane-xyz/core": "^3.7.0",
+        "@hyperlane-xyz/sdk": "^3.7.0",
         "@hyperlane-xyz/utils": "^3.7.0",
         "zod": "^3.22.4"
     },
     "devDependencies": {
         "@types/node": "^20.0.0",
-        "typescript": "^5.0.0",
         "@typescript-eslint/eslint-plugin": "^6.0.0",
         "@typescript-eslint/parser": "^6.0.0",
         "eslint": "^8.0.0",
+        "typescript": "^5.0.0",
         "vitest": "^1.0.0"
     },
     "peerDependencies": {

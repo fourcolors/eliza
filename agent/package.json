@@ -95,6 +95,7 @@
         "@elizaos/plugin-allora": "workspace:*",
         "@elizaos/plugin-opacity": "workspace:*",
         "@elizaos/plugin-hyperliquid": "workspace:*",
+        "@elizaos/plugin-hyperlane": "workspace:*",
         "@elizaos/plugin-akash": "workspace:*",
         "@elizaos/plugin-quai": "workspace:*",
         "@elizaos/plugin-b2": "workspace:*",
