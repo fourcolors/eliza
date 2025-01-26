@@ -47,38 +47,60 @@ describe("sendMessage action", () => {
       body: mockMessage.body,
     })
     expect(result).toEqual({
-      messageId: mockMessage.id,
-      txHash: mockTxHash,
+      success: true,
+      data: {
+        messageId: mockMessage.id,
+        txHash: mockTxHash,
+      },
+      metadata: new Map(),
     })
   })
 
-  it("should throw if message is missing", async () => {
+  it("should return error if message is missing", async () => {
     const runtime = {
       input: { destinationChain: "2" },
       services: new Map([["hyperlane", mockService]]),
     } as unknown as IAgentRuntime
 
     const action = createSendMessageAction()
-    await expect(action.handler(runtime)).rejects.toThrow("message and destinationChain are required")
+    const result = await action.handler(runtime)
+
+    expect(result).toEqual({
+      success: false,
+      error: "message and destinationChain are required",
+      metadata: new Map(),
+    })
   })
 
-  it("should throw if destinationChain is missing", async () => {
+  it("should return error if destinationChain is missing", async () => {
     const runtime = {
       input: { message: mockMessage },
       services: new Map([["hyperlane", mockService]]),
     } as unknown as IAgentRuntime
 
     const action = createSendMessageAction()
-    await expect(action.handler(runtime)).rejects.toThrow("message and destinationChain are required")
+    const result = await action.handler(runtime)
+
+    expect(result).toEqual({
+      success: false,
+      error: "message and destinationChain are required",
+      metadata: new Map(),
+    })
   })
 
-  it("should throw if hyperlane service is missing", async () => {
+  it("should return error if hyperlane service is missing", async () => {
     const runtime = {
       input: { message: mockMessage, destinationChain: "2" },
       services: new Map(),
     } as unknown as IAgentRuntime
 
     const action = createSendMessageAction()
-    await expect(action.handler(runtime)).rejects.toThrow("hyperlane service is required")
+    const result = await action.handler(runtime)
+
+    expect(result).toEqual({
+      success: false,
+      error: "hyperlane service is required",
+      metadata: new Map(),
+    })
   })
 })

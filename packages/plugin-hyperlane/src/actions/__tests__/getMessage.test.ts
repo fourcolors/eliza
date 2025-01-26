@@ -41,35 +41,57 @@ describe("getMessage action", () => {
     expect(mockStorage.getMessage).toHaveBeenCalledWith(mockMessage.id)
     expect(mockStorage.getMessageStatus).toHaveBeenCalledWith(mockMessage.id)
     expect(result).toEqual({
-      message: mockMessage,
-      status: "delivered",
+      success: true,
+      data: {
+        message: mockMessage,
+        status: "delivered",
+      },
+      metadata: new Map(),
     })
   })
 
-  it("should throw if messageId is missing", async () => {
+  it("should return error if messageId is missing", async () => {
     const runtime = {
       input: {},
       services: new Map([["storage", mockStorage]]),
     } as unknown as IAgentRuntime
 
     const action = createGetMessageAction()
-    await expect(action.handler(runtime)).rejects.toThrow("messageId is required")
+    const result = await action.handler(runtime)
+
+    expect(result).toEqual({
+      success: false,
+      error: "messageId is required",
+      metadata: new Map(),
+    })
   })
 
-  it("should throw if storage service is missing", async () => {
+  it("should return error if storage service is missing", async () => {
     const runtime = {
       input: { messageId: mockMessage.id },
       services: new Map(),
     } as unknown as IAgentRuntime
 
     const action = createGetMessageAction()
-    await expect(action.handler(runtime)).rejects.toThrow("storage service is required")
+    const result = await action.handler(runtime)
+
+    expect(result).toEqual({
+      success: false,
+      error: "storage service is required",
+      metadata: new Map(),
+    })
   })
 
-  it("should throw if message is not found", async () => {
+  it("should return error if message is not found", async () => {
     mockStorage.getMessage.mockResolvedValue(undefined)
 
     const action = createGetMessageAction()
-    await expect(action.handler(mockRuntime)).rejects.toThrow(`Message ${mockMessage.id} not found`)
+    const result = await action.handler(mockRuntime)
+
+    expect(result).toEqual({
+      success: false,
+      error: `Message ${mockMessage.id} not found`,
+      metadata: new Map(),
+    })
   })
 })
