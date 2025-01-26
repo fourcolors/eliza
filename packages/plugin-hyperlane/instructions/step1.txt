@@ -1,189 +1,62 @@
+# Step 1: Project Setup
+-------------------------
+Purpose: Set up the initial project structure and core types
+
+Required Reading:
+- ElizaOS Setup Guide → [Setup Documentation](https://elizaos.github.io/eliza/docs/setup)
+- Hyperlane Quick Start → [Quick Start Guide](https://docs.hyperlane.xyz/docs/quick-start)
+- pnpm Workspace Setup → [Workspace Guide](https://pnpm.io/workspaces)
+
 Documentation References:
 - ElizaOS Plugin System: https://elizaos.github.io/eliza/docs/plugins/
 - Hyperlane Core Concepts: https://docs.hyperlane.xyz/docs/protocol/protocol-overview
 - Hyperlane Mailbox Interface: https://docs.hyperlane.xyz/docs/protocol/mailbox
 
-# Step 1: Basic Setup & Configuration
--------------------------
-Purpose: Establish core plugin services and providers for Hyperlane integration
+## Implementation Steps
 
-Design Decisions:
-1. Service Boundaries:
-   - HyperlaneService: Manages Mailbox contract interactions and message dispatch
-   - StorageService: Handles persistent storage of message state
-   Justification: These services require stateful connections and external system interaction
-
-2. Functional Core:
-   - All configuration generation is pure
-   - All provider functions are pure
-   - All data structures are immutable
-   Justification: Pure functions are easier to test, maintain, and compose
-
-3. Type Safety:
-   - Readonly types for all interfaces
-   - Const assertions for configurations
-   - Explicit error types
-   Justification: Compile-time guarantees and immutability enforcement
-
-Actions:
-1. Core Service Types (External Integration Layer)
-   ```typescript
-   export interface HyperlaneService {
-     // Core Mailbox interactions
-     readonly getMailbox: (domain: number) => Promise<IMailbox>;
-     readonly dispatch: (
-       params: Readonly<DispatchParams>
-     ) => Promise<Readonly<DispatchResult>>;
-     readonly process: (
-       params: Readonly<ProcessParams>
-     ) => Promise<Readonly<ProcessResult>>;
-     
-     // Provider management
-     readonly getProvider: (domain: number) => Provider;
-     readonly getDomains: () => ReadonlyArray<number>;
-   }
-
-   export interface StorageService {
-     readonly saveMessage: (
-       message: Readonly<HyperlaneMessage>
-     ) => Promise<void>;
-     readonly getMessage: (
-       id: string
-     ) => Promise<Readonly<HyperlaneMessage>>;
-     readonly listMessages: (
-       filter?: Readonly<MessageFilter>
-     ) => Promise<ReadonlyArray<HyperlaneMessage>>;
-   }
-   ```
-
-2. Pure Message Types
-   ```typescript
-   export type HyperlaneMessage = Readonly<{
-     id: string;
-     sender: string;
-     recipient: string;
-     origin: number;
-     destination: number;
-     body: string;
-     metadata?: ReadonlyMap<string, unknown>;
-   }>;
-
-   export type MessageFilter = Readonly<{
-     origin?: number;
-     destination?: number;
-     status?: 'pending' | 'delivered' | 'failed';
-   }>;
-   ```
-
-3. Pure Configuration Functions
-   ```typescript
-   export const createConfig = (
-     params: Readonly<ConfigParams>
-   ): Readonly<PluginConfig> => ({
-     domains: new Set(params.domains),
-     providers: new Map(params.providers),
-     defaultIsm: params.defaultIsm,
-     hooks: new Map(params.hooks)
-   } as const);
-
-   export const createProviderConfig = (
-     config: Readonly<PluginConfig>
-   ): Readonly<ProviderConfig> => ({
-     multiProvider: createMultiProvider(config),
-     storage: createStorageConfig(config),
-     security: createSecurityConfig(config)
-   } as const);
-   ```
-
-4. Pure Provider Functions
-   ```typescript
-   export const createConfigProvider = (
-     config: Readonly<PluginConfig>
-   ) => (): Readonly<Record<string, unknown>> => ({
-     domains: Array.from(config.domains),
-     providers: Object.fromEntries(config.providers),
-     defaultIsm: config.defaultIsm,
-     hooks: Object.fromEntries(config.hooks)
-   } as const);
-
-   export const createMessageProvider = (
-     storage: Readonly<StorageService>
-   ) =>
-     async (
-       filter?: Readonly<MessageFilter>
-     ): Promise<Readonly<Record<string, unknown>>> => {
-       const messages = await storage.listMessages(filter);
-       return {
-         messages,
-         count: messages.length,
-         filter
-       } as const;
-     };
-   ```
-
-5. Implementation Structure
+1. Project Structure
    ```
    src/
-     services/           # Stateful external services
-       HyperlaneService.ts
-       StorageService.ts
-     config/            # Pure configuration functions
-       createConfig.ts
-       createProviderConfig.ts
-     providers/         # Pure provider functions
-       createConfigProvider.ts
-       createMessageProvider.ts
-     types/            # Shared type definitions
-       hyperlane.ts
-       config.ts
-       provider.ts
-     utils/            # Pure utility functions
-       config.ts
-       validation.ts
+     services/           # Core service implementations
+     config/            # Configuration functions
+     providers/         # Provider functions
+     types/            # Type definitions
+     utils/            # Utility functions
    ```
 
-6. Test Structure
-   ```typescript
-   // Pure function tests with vitest
-   describe('createConfig', () => {
-     it('creates immutable config', () => {
-       const config = createConfig({
-         domains: [1, 2],
-         providers: [['ethereum', 'url']]
-       });
-       
-       expect(() => {
-         // @ts-expect-error - readonly violation
-         config.domains.add(3)
-       }).toThrow();
-     });
-   });
+2. Core Types
+   - Message types
+   - Service interfaces
+   - Configuration types
+   - Provider types
 
-   // Integration tests
-   describe('HyperlaneService', () => {
-     it('dispatches messages', async () => {
-       const service = createHyperlaneService();
-       const result = await service.dispatch({
-         destination: 1,
-         recipient: '0x...',
-         body: '0x...'
-       });
-       expect(result.id).toBeDefined();
-     });
-   });
-   ```
+3. Configuration
+   - Pure configuration functions
+   - Provider configuration
+   - Immutable data structures
 
-Validation:
-- Function purity
-- Type immutability
-- Service isolation
-- Error handling
+4. Testing
+   - Unit tests for configuration
+   - Immutability tests
+   - Type safety tests
 
-PAUSE:
-- Run unit tests
-- Verify provider functions
-- Check service boundaries
-- Test configurations
+## Verification Checklist
+- [ ] Project structure created
+- [ ] Core types defined
+- [ ] Configuration functions implemented
+- [ ] Tests passing
+- [ ] Documentation updated
 
-Next Step:
-- Move to step2.txt (Action Implementation) once all tests pass
+## Next Steps
+After completing this step:
+1. Review implementation-checklist.md for completed items
+2. Check coordinator.txt for next tasks based on remaining checklist items
+3. Follow the coordinator's guidance on prioritization and dependencies
+
+Note: Do not automatically proceed to the next step file. Instead, consult the coordinator.txt and implementation-checklist.md to determine the next priority based on:
+- Dependencies between tasks
+- Current completion status
+- Security considerations
+- Testing coverage
+
+Please refer to coordinator.txt for further instructions.

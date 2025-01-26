@@ -310,5 +310,24 @@ PAUSE:
 - Check standards
 - Test integration
 
-Next Step:
-- Move to step9.txt (Security Integration) once all tests pass
+## Verification Checklist
+- [ ] Token interface types defined
+- [ ] ERC20 integration complete
+- [ ] ERC721 integration complete
+- [ ] ERC4626 integration complete
+- [ ] Token transfer functions implemented
+- [ ] Gas estimation for transfers
+- [ ] Tests passing
+- [ ] Documentation updated
+
+## Next Steps
+After completing this step:
+1. Update implementation-checklist.md with completed items
+2. Return to coordinator.txt for next task prioritization
+3. Follow the coordinator's workflow for step completion
+
+Note: Do not proceed to the next step file. Instead:
+1. Check implementation-checklist.md for completion status
+2. Review coordinator.txt for task dependencies and priorities
+3. Select next task based on coordinator's workflow
+4. Ensure all security and testing requirements are met

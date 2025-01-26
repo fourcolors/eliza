@@ -78,6 +78,40 @@ Key Objectives:
       - Maintain a stable API layer.  
       - Encourage community contributions via a well-structured repo.
 
+## Implementation Progress
+After completing each step:
+1. Update implementation-checklist.md with completed items
+2. Review remaining items in implementation-checklist.md
+3. Determine next priority based on:
+   - Dependencies between tasks
+   - Security requirements
+   - Testing coverage
+   - Current completion status
+
+## Step Completion Workflow
+1. Complete current step's implementation
+2. Run all tests and verify functionality
+3. Update implementation-checklist.md
+4. Review code changes and determine if a git commit is needed:
+   - Have new files been added?
+   - Have existing files been modified?
+   - Do the changes represent a complete logical unit?
+   - Are the changes ready for review?
+5. If commit needed:
+   - Review git-commit.txt for commit message guidelines
+   - Stage changes with appropriate grouping
+   - Create commit with descriptive message
+   - Verify commit contents
+6. Review remaining checklist items
+7. Select next task based on priorities and dependencies
+8. Document any blockers or dependencies
+
+Note: Do not automatically proceed to the next numbered step. Instead:
+1. Check implementation-checklist.md for completion status
+2. Identify any incomplete items from previous steps
+3. Select the next task that has all dependencies satisfied
+4. Prioritize security-critical features
+
 ## Version Control Guidelines
 See: [Git Commit Instructions](git-commit.txt)
 

@@ -1,13 +1,13 @@
-Documentation References:
-- ElizaOS Actions: https://elizaos.github.io/eliza/docs/actions/
-- Hyperlane Messaging: https://docs.hyperlane.xyz/docs/protocol/messaging
-- Hyperlane Warp Routes: https://docs.hyperlane.xyz/docs/guides/deploy-warp-route
-
 # Step 2: Action Implementation
 -------------------------
 Purpose: Implement pure action functions for Hyperlane message dispatch and token transfers
 
-Design Decisions:
+Required Reading:
+- ElizaOS Actions: [Actions Documentation](https://elizaos.github.io/eliza/docs/actions/)
+- Hyperlane Messaging: [Messaging Documentation](https://docs.hyperlane.xyz/docs/protocol/messaging)
+- Hyperlane Warp Routes: [Warp Routes Documentation](https://docs.hyperlane.xyz/docs/guides/deploy-warp-route)
+
+## Design Decisions
 1. Action Purity:
    - All actions are pure functions
    - Actions receive dependencies via parameters
@@ -26,8 +26,8 @@ Design Decisions:
    - No exceptions for control flow
    Justification: Predictable error handling and composition
 
-Actions:
-1. Pure Action Types
+## Implementation Steps
+1. Action Types
    ```typescript
    export type ActionResult<T> = Readonly<{
      success: boolean;
@@ -48,7 +48,7 @@ Actions:
    }>;
    ```
 
-2. Pure Action Functions
+2. Action Functions
    ```typescript
    export const createTransferAction = (
      hyperlane: Readonly<HyperlaneService>,
@@ -117,7 +117,7 @@ Actions:
      };
    ```
 
-3. Pure Validation Functions
+3. Validation Functions
    ```typescript
    export const createParamsValidator = () =>
      async (
@@ -146,75 +146,22 @@ Actions:
      };
    ```
 
-4. Implementation Structure
-   ```
-   src/
-     actions/           # Pure action functions
-       createTransferAction.ts
-       createMessageAction.ts
-     validators/       # Pure validation functions
-       createParamsValidator.ts
-       tokenValidators.ts
-     executors/       # Pure execution functions
-       createTransferExecutor.ts
-       createMessageExecutor.ts
-     types/           # Shared type definitions
-       action.ts
-       transfer.ts
-       message.ts
-     utils/           # Pure utility functions
-       validation.ts
-       conversion.ts
-   ```
+## Verification Checklist
+- [ ] Action types defined
+- [ ] Transfer action implemented
+- [ ] Message action implemented
+- [ ] Validation functions created
+- [ ] Tests passing
+- [ ] Documentation updated
 
-5. Test Structure
-   ```typescript
-   // Pure action tests
-   describe('createTransferAction', () => {
-     it('validates params before execution', async () => {
-       const action = createTransferAction(mockHyperlane, mockStorage);
-       const result = await action({
-         tokenType: 'erc20',
-         amount: '-1', // Invalid amount
-         token: '0x...',
-         recipient: '0x...',
-         destinationDomain: 1
-       });
-       
-       expect(result.success).toBe(false);
-       expect(result.error).toContain('Invalid amount');
-     });
-   });
+## Next Steps
+After completing this step:
+1. Review implementation-checklist.md for completed items
+2. Check coordinator.txt for next tasks based on remaining checklist items
+3. Follow the coordinator's guidance on prioritization and dependencies
 
-   // Integration tests
-   describe('TransferAction Integration', () => {
-     it('transfers tokens across chains', async () => {
-       const action = createTransferAction(realHyperlane, realStorage);
-       const result = await action({
-         tokenType: 'erc20',
-         amount: '1000000',
-         token: tokenAddress,
-         recipient: recipientAddress,
-         destinationDomain: 2
-       });
-       
-       expect(result.success).toBe(true);
-       expect(result.data).toBeDefined(); // messageId
-     });
-   });
-   ```
-
-Validation:
-- Function purity
-- Type safety
-- Error handling
-- Action composition
-
-PAUSE:
-- Run action tests
-- Verify validations
-- Check error handling
-- Test token transfers
-
-Next Step:
-- Move to step3.txt (Message Tracking) once all tests pass
+Note: Do not automatically proceed to the next step file. Instead, consult the coordinator.txt and implementation-checklist.md to determine the next priority based on:
+- Dependencies between tasks
+- Current completion status
+- Security considerations
+- Testing coverage
