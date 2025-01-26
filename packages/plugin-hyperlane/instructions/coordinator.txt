@@ -1,0 +1,83 @@
+# Hyperlane Plugin Coordinator
+Purpose:
+  - This file coordinates the implementation steps for the Hyperlane plugin
+  - Ensures proper testing and validation between steps
+  - Tracks progress of bounty requirements
+
+Instructions:
+  1. Read each step file in numerical order (step1.txt, step2.txt, etc.)
+  2. Complete the task listed in that step file
+  3. PAUSE for test & validation
+     - If tests pass, proceed to the next step
+     - If tests fail, debug and retry until successful
+  4. Only move to the next step once current step is fully validated
+
+Implementation Order:
+
+1. Asset Transfer via Warp Routes ($500) - CURRENT FOCUS
+   Status: Not Started
+   Files: step1.txt to step4.txt
+   Description: Basic token transfer functionality using existing Warp Routes
+   Prerequisites: 
+     - RPC endpoints for supported chains
+     - Test tokens for development
+
+2. Cross-Chain Information Transfer ($500)
+   Status: Not Started
+   Files: step5.txt to step8.txt
+   Description: Message passing and function execution across chains
+   Prerequisites:
+     - Working token transfer implementation
+     - Test environments for multiple chains
+
+3. Warp Route Deployment ($500)
+   Status: Not Started
+   Files: step9.txt to step12.txt
+   Description: Enabling agents to deploy their own Warp Routes
+   Prerequisites:
+     - Working message passing
+     - Deployment permissions and gas
+
+4. New Chain Deployment ($500)
+   Status: Not Started
+   Files: step13.txt to step16.txt
+   Description: Full Hyperlane deployment on new chains
+   Prerequisites:
+     - Chain deployment access
+     - Validator/relayer infrastructure
+
+Environment Configuration:
+1. Required ENV Variables:
+   - HYPERLANE_RPC_ENDPOINTS: JSON map of chain names to RPC URLs
+   - HYPERLANE_PRIVATE_KEY: Optional, for signing transactions
+   - HYPERLANE_GAS_PAYMENT_ENFORCEMENT: Boolean for gas payment checks
+
+2. Configuration Files:
+   - warp-routes.json: Known Warp Route addresses and configurations
+   - chain-config.json: Chain-specific configurations
+   - validator-config.json: Validator settings (for chain deployment)
+
+Progress Tracking:
+[ ] Asset Transfer (Current)
+    [ ] Step 1: Basic Setup & Configuration
+    [ ] Step 2: Token Transfer Implementation
+    [ ] Step 3: Transfer Status & Verification
+    [ ] Step 4: Error Handling & Recovery
+
+[ ] Information Transfer
+    [ ] Step 5: Message Infrastructure
+    [ ] Step 6: Function Execution
+    [ ] Step 7: Data Reading
+    [ ] Step 8: Security & Validation
+
+[ ] Warp Route Deployment
+    [ ] Step 9: Deployment Preparation
+    [ ] Step 10: Route Configuration
+    [ ] Step 11: Security Checks
+    [ ] Step 12: Deployment & Verification
+
+[ ] Chain Deployment
+    [ ] Step 13: Chain Setup
+    [ ] Step 14: Validator Deployment
+    [ ] Step 15: Relayer Setup
+    [ ] Step 16: Network Validation

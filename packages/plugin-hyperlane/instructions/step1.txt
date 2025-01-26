@@ -1,0 +1,88 @@
+# Step 1: Basic Setup & Configuration
+-------------------------
+Purpose: Establish immutable configuration infrastructure for Warp Route token transfers
+
+Actions:
+1. Type Definitions
+   - Create types directory
+   - Define immutable configuration interfaces
+   - Create chain and route type definitions
+
+2. Configuration Structure
+   - Implement pure configuration loader functions
+   - Create immutable configuration validators
+   - Set up type-safe environment handling
+
+3. Configuration Schemas
+   warp-routes.config.ts:
+   ```typescript
+   export interface WarpRoute {
+     readonly warpRouteAddress: string;
+     readonly tokenAddress: string;
+     readonly supportedDestinations: ReadonlyArray<string>;
+   }
+
+   export interface WarpRouteConfig {
+     readonly routes: ReadonlyMap<string, WarpRoute>;
+   }
+   ```
+
+   chain.config.ts:
+   ```typescript
+   export interface ChainConfig {
+     readonly rpcUrl: string;
+     readonly chainId: string;
+     readonly nativeToken: string;
+   }
+
+   export interface ChainsConfig {
+     readonly chains: ReadonlyMap<string, ChainConfig>;
+   }
+   ```
+
+4. Pure Functions Implementation
+   - createConfigurationLoader
+   - validateConfiguration
+   - createChainValidator
+   - createTestConfiguration
+
+5. Test Suite Setup
+   - Unit tests with vitest
+   - Configuration validation tests
+   - Environment handling tests
+   - Chain validation tests
+
+File Structure:
+```
+src/
+  config/
+    types/
+      warp-route.ts
+      chain.ts
+    loaders/
+      config-loader.ts
+      env-loader.ts
+    validators/
+      chain-validator.ts
+      config-validator.ts
+    index.ts
+  tests/
+    config/
+      loaders.test.ts
+      validators.test.ts
+```
+
+Validation:
+- All functions are pure and return new instances
+- No mutable state in configuration
+- Comprehensive test coverage
+- Type-safe implementation
+
+PAUSE:
+- Run vitest test suite
+- Verify type safety
+- Check immutability
+- Validate error handling
+
+Next Step:
+- Move to step2.txt (Token Transfer Implementation) once all tests pass

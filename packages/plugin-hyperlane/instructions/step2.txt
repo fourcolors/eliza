@@ -1,0 +1,70 @@
+# Step 2: Token Transfer Implementation
+-------------------------
+Purpose: Implement pure functions for cross-chain token transfers via Warp Routes
+
+Actions:
+1. Token Transfer Types
+   ```typescript
+   export interface TokenTransferParams {
+     readonly sourceChain: string;
+     readonly destinationChain: string;
+     readonly tokenAddress: string;
+     readonly amount: string;
+     readonly recipient: string;
+   }
+
+   export interface TransferResult {
+     readonly transferId: string;
+     readonly sourceChain: string;
+     readonly destinationChain: string;
+     readonly status: 'pending' | 'completed' | 'failed';
+     readonly error?: string;
+   }
+   ```
+
+2. Pure Transfer Functions
+   - createTransferTokens
+   - createEstimateTransferGas
+   - createValidateTransfer
+   - createGetTransferStatus
+
+3. Implementation Structure
+   ```
+   src/
+     transfers/
+       types/
+         transfer.ts
+         params.ts
+       functions/
+         transfer-token.ts
+         estimate-gas.ts
+         validate-transfer.ts
+         get-status.ts
+       utils/
+         transfer-helpers.ts
+       tests/
+         transfer.test.ts
+         validation.test.ts
+   ```
+
+4. Test Cases
+   - Unit tests for all pure functions
+   - Integration tests for token transfers
+   - Error case testing
+   - Gas estimation validation
+
+Validation:
+- All functions maintain purity
+- No side effects in core logic
+- Comprehensive test coverage
+- Proper error handling
+- Gas estimation accuracy
+
+PAUSE:
+- Run full test suite
+- Verify transfer functionality
+- Check error handling
+- Validate gas estimates
+
+Next Step:
+- Move to step3.txt (Transfer Status & Verification) once all tests pass
