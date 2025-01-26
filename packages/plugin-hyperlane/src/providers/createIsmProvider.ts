@@ -16,7 +16,7 @@ export interface IsmProvider {
 }
 
 export const createIsmProvider = (config: HyperlaneConfig): IsmProvider => {
-  const verifyMessage = async ({ messageId, originChain }) => {
+  const verifyMessage = async ({ messageId, originChain }: { messageId: string; originChain: string }): Promise<{ verified: boolean; status: MessageStatus }> => {
     const ism = config.getIsm(originChain)
     const mailbox = config.getMailbox(originChain)
     
@@ -25,7 +25,7 @@ export const createIsmProvider = (config: HyperlaneConfig): IsmProvider => {
     if (!message) {
       return {
         verified: false,
-        status: "not_found" as const,
+        status: "not_found" as MessageStatus,
       }
     }
 
@@ -40,12 +40,12 @@ export const createIsmProvider = (config: HyperlaneConfig): IsmProvider => {
 
       return {
         verified,
-        status: verified ? "verified" : "invalid" as const,
+        status: verified ? "verified" as MessageStatus : "invalid" as MessageStatus,
       }
     } catch (error) {
       return {
         verified: false,
-        status: "verification_failed" as const,
+        status: "verification_failed" as MessageStatus,
       }
     }
   }

@@ -107,8 +107,8 @@ When returning to the project:
    # Rebuild project
    pnpm build
    
-   # Run tests to verify state
-   pnpm test
+   # Run tests for Hyperlane plugin only
+   cd packages/plugin-hyperlane && pnpm test
    ```
 
 4. Context Recovery
