@@ -1,67 +1,264 @@
 # Step 4: Error Handling & Recovery
 -------------------------
-Purpose: Implement pure error handling and recovery functions for failed transfers
+Documentation References:
+- ElizaOS Error Handling: https://elizaos.github.io/eliza/docs/errors/
+- Hyperlane Mailbox: https://docs.hyperlane.xyz/docs/protocol/mailbox
+- Hyperlane Message Verification: https://docs.hyperlane.xyz/docs/protocol/ISM/modular-security
+
+Purpose: Implement pure error handling and recovery functions for Hyperlane operations
+
+Design Decisions:
+1. Error Types:
+   - Pure error type hierarchy
+   - Immutable error states
+   - Composable error handlers
+   Justification: Type-safe error handling and composition
+
+2. Recovery Strategies:
+   - Pure recovery functions
+   - Immutable recovery state
+   - Composable recovery steps
+   Justification: Reliable error recovery with functional purity
+
+3. Validation:
+   - Pure validation functions
+   - Immutable validation state
+   - Composable validators
+   Justification: Prevent errors through pure validation
 
 Actions:
-1. Error Types
+1. Pure Error Types
    ```typescript
-   export interface TransferError {
-     readonly type: 'gas' | 'validation' | 'network' | 'timeout';
-     readonly code: string;
-     readonly message: string;
-     readonly recoverable: boolean;
-     readonly context: Readonly<Record<string, unknown>>;
-   }
+   export type HyperlaneError = Readonly<{
+     code: string;
+     message: string;
+     context: ReadonlyMap<string, unknown>;
+     timestamp: number;
+     recoverable: boolean;
+   }>;
 
-   export interface RecoveryResult {
-     readonly successful: boolean;
-     readonly newTransferId?: string;
-     readonly error?: TransferError;
-     readonly timestamp: number;
-   }
+   export type ValidationError = Readonly<{
+     field: string;
+     value: unknown;
+     constraint: string;
+     message: string;
+   }>;
+
+   export type Result<T, E = HyperlaneError> = Readonly<{
+     success: boolean;
+     data?: T;
+     error?: E;
+     metadata: ReadonlyMap<string, unknown>;
+   }>;
    ```
 
-2. Pure Error Handling Functions
-   - createHandleTransferError
-   - createRecoverFailedTransfer
-   - createValidateRecovery
-   - createGetRecoveryStatus
+2. Pure Error Handlers
+   ```typescript
+   export const createErrorHandler = (
+     storage: Readonly<StorageService>
+   ) =>
+     async (
+       error: Readonly<HyperlaneError>
+     ): Promise<Readonly<Result<void>>> => {
+       // Log error
+       await storage.saveError({
+         ...error,
+         timestamp: Date.now()
+       });
 
-3. Implementation Structure
+       // Handle specific error types
+       switch (error.code) {
+         case 'MAILBOX_VERIFICATION_FAILED':
+           return await handleVerificationError(error);
+         case 'MESSAGE_DELIVERY_FAILED':
+           return await handleDeliveryError(error);
+         default:
+           return {
+             success: false,
+             error,
+             metadata: new Map([
+               ['handled', false],
+               ['timestamp', Date.now()]
+             ])
+           } as const;
+       }
+     };
+
+   export const createRecoveryHandler = (
+     hyperlane: Readonly<HyperlaneService>
+   ) =>
+     async (
+       messageId: string
+     ): Promise<Readonly<Result<string>>> => {
+       try {
+         const mailbox = await hyperlane.getMailbox(0);
+         const message = await mailbox.getMessage(messageId);
+
+         if (!message) {
+           return {
+             success: false,
+             error: {
+               code: 'MESSAGE_NOT_FOUND',
+               message: 'Message not found',
+               context: new Map([['messageId', messageId]]),
+               timestamp: Date.now(),
+               recoverable: false
+             },
+             metadata: new Map()
+           } as const;
+         }
+
+         // Retry message delivery
+         const result = await mailbox.process(
+           message.metadata,
+           message.body
+         );
+
+         return {
+           success: true,
+           data: result.id,
+           metadata: new Map([
+             ['retryCount', result.retryCount],
+             ['timestamp', Date.now()]
+           ])
+         } as const;
+       } catch (error) {
+         return {
+           success: false,
+           error: {
+             code: 'RECOVERY_FAILED',
+             message: error.message,
+             context: new Map([['messageId', messageId]]),
+             timestamp: Date.now(),
+             recoverable: true
+           },
+           metadata: new Map()
+         } as const;
+       }
+     };
+   ```
+
+3. Pure Validation Functions
+   ```typescript
+   export const createMessageValidator = () =>
+     (message: unknown): ReadonlyArray<ValidationError> => {
+       const errors: ValidationError[] = [];
+
+       // Validate message structure
+       if (!isValidMessage(message)) {
+         errors.push({
+           field: 'message',
+           value: message,
+           constraint: 'structure',
+           message: 'Invalid message structure'
+         });
+       }
+
+       // Validate domains
+       if (!isValidDomain(message.origin)) {
+         errors.push({
+           field: 'origin',
+           value: message.origin,
+           constraint: 'domain',
+           message: 'Invalid origin domain'
+         });
+       }
+
+       return errors as ReadonlyArray<ValidationError>;
+     };
+
+   export const createTransactionValidator = () =>
+     (tx: unknown): ReadonlyArray<ValidationError> => {
+       const errors: ValidationError[] = [];
+
+       // Validate transaction format
+       if (!isValidTransaction(tx)) {
+         errors.push({
+           field: 'transaction',
+           value: tx,
+           constraint: 'format',
+           message: 'Invalid transaction format'
+         });
+       }
+
+       return errors as ReadonlyArray<ValidationError>;
+     };
+   ```
+
+4. Implementation Structure
    ```
    src/
-     errors/
-       types/
-         error.ts
-         recovery.ts
-       functions/
-         handle-error.ts
-         recover-transfer.ts
-         validate-recovery.ts
-       utils/
-         error-helpers.ts
-       tests/
-         error-handling.test.ts
-         recovery.test.ts
+     errors/            # Pure error handling
+       createErrorHandler.ts
+       createRecoveryHandler.ts
+     validators/       # Pure validation
+       createMessageValidator.ts
+       createTransactionValidator.ts
+     types/           # Shared type definitions
+       error.ts
+       validation.ts
+       result.ts
+     utils/           # Pure utility functions
+       error.ts
+       validation.ts
    ```
 
-4. Test Cases
-   - Error handling unit tests
-   - Recovery function tests
-   - Validation test cases
-   - Integration tests
+5. Test Structure
+   ```typescript
+   // Pure error handler tests
+   describe('createErrorHandler', () => {
+     it('handles verification errors', async () => {
+       const handler = createErrorHandler(mockStorage);
+       const result = await handler({
+         code: 'MAILBOX_VERIFICATION_FAILED',
+         message: 'Invalid signature',
+         context: new Map(),
+         timestamp: Date.now(),
+         recoverable: true
+       });
+       
+       expect(result.success).toBe(false);
+       expect(result.metadata.get('handled')).toBe(true);
+     });
+   });
+
+   // Pure validation tests
+   describe('createMessageValidator', () => {
+     it('validates message structure', () => {
+       const validator = createMessageValidator();
+       const errors = validator({
+         origin: -1, // Invalid domain
+         body: '0x'
+       });
+       
+       expect(errors).toHaveLength(1);
+       expect(errors[0].field).toBe('origin');
+     });
+   });
+
+   // Integration tests
+   describe('ErrorHandling Integration', () => {
+     it('recovers from delivery failures', async () => {
+       const handler = createRecoveryHandler(realHyperlane);
+       const result = await handler('failed-message-id');
+       
+       expect(result.success).toBe(true);
+       expect(result.metadata.get('retryCount')).toBe(1);
+     });
+   });
+   ```
 
 Validation:
-- Pure error handling
-- Immutable error states
-- Recovery functionality
-- Comprehensive testing
+- Function purity
+- Type safety
+- Error composition
+- Recovery strategies
 
 PAUSE:
-- Run error test suite
-- Verify recovery process
-- Check error handling
-- Validate state management
+- Run error tests
+- Verify handlers
+- Check validation
+- Test recovery
 
 Next Step:
-- Begin Information Transfer implementation (step5.txt) once complete
+- Move to step5.txt (Cross-Chain Messaging) once all tests pass

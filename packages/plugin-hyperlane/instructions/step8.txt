@@ -1,0 +1,314 @@
+# Step 8: Token Integration
+-------------------------
+Documentation References:
+- ElizaOS Token Integration: https://elizaos.github.io/eliza/docs/tokens/
+- Hyperlane Token Standards: https://docs.hyperlane.xyz/docs/reference/tokens/
+- ERC Standards: https://eips.ethereum.org/EIPS/eip-20
+
+Purpose: Implement pure functions for cross-chain token operations
+
+Design Decisions:
+1. Token Operations:
+   - Pure token functions
+   - Immutable token state
+   - Composable token operations
+   Justification: Maintain functional purity in token handling
+
+2. Token Standards:
+   - Pure standard adapters
+   - Immutable token interfaces
+   - Composable standard handlers
+   Justification: Support multiple token standards purely
+
+3. Token Security:
+   - Pure security checks
+   - Immutable security state
+   - Composable security chain
+   Justification: Ensure secure token operations
+
+Actions:
+1. Pure Token Types
+   ```typescript
+   export type TokenConfig = Readonly<{
+     address: string;
+     standard: 'ERC20' | 'ERC721' | 'ERC1155';
+     decimals?: number;
+     metadata?: ReadonlyMap<string, unknown>;
+   }>;
+
+   export type TokenOperation = Readonly<{
+     type: 'transfer' | 'approve' | 'mint' | 'burn';
+     token: TokenConfig;
+     from: string;
+     to: string;
+     amount: string;
+     tokenId?: string;
+     data?: string;
+   }>;
+
+   export type TokenResult = Readonly<{
+     success: boolean;
+     txHash?: string;
+     error?: string;
+     metadata: ReadonlyMap<string, unknown>;
+   }>;
+   ```
+
+2. Pure Token Functions
+   ```typescript
+   export const createTokenOperator = (
+     config: Readonly<TokenConfig>
+   ) =>
+     async (
+       operation: Readonly<TokenOperation>
+     ): Promise<Readonly<TokenResult>> => {
+       // Get appropriate token handler
+       const handler = createTokenHandler(config.standard);
+       
+       try {
+         // Execute operation
+         const result = await handler.execute(operation);
+         
+         return {
+           success: true,
+           txHash: result.hash,
+           metadata: new Map([
+             ['token', config],
+             ['operation', operation.type],
+             ['timestamp', Date.now()]
+           ])
+         } as const;
+       } catch (error) {
+         return {
+           success: false,
+           error: error.message,
+           metadata: new Map([
+             ['token', config],
+             ['operation', operation.type],
+             ['error', error]
+           ])
+         } as const;
+       }
+     };
+
+   export const createTokenHandler = (
+     standard: string
+   ): Readonly<TokenHandler> => {
+     switch (standard) {
+       case 'ERC20':
+         return {
+           execute: createERC20Handler(),
+           validate: createERC20Validator(),
+           metadata: new Map([
+             ['standard', 'ERC20'],
+             ['interfaces', ['IERC20']]
+           ])
+         } as const;
+         
+       case 'ERC721':
+         return {
+           execute: createERC721Handler(),
+           validate: createERC721Validator(),
+           metadata: new Map([
+             ['standard', 'ERC721'],
+             ['interfaces', ['IERC721']]
+           ])
+         } as const;
+         
+       default:
+         throw new Error(`Unsupported token standard: ${standard}`);
+     }
+   };
+   ```
+
+3. Pure Standard Handlers
+   ```typescript
+   export const createERC20Handler = () =>
+     async (
+       operation: Readonly<TokenOperation>
+     ): Promise<Readonly<TransactionResult>> => {
+       // Validate operation
+       const validateOperation = createERC20Validator();
+       const validationResult = await validateOperation(operation);
+       
+       if (!validationResult.valid) {
+         throw new Error(validationResult.errors.join(', '));
+       }
+
+       // Create contract instance
+       const contract = createERC20Contract(operation.token.address);
+       
+       // Execute operation
+       switch (operation.type) {
+         case 'transfer':
+           return contract.transfer(operation.to, operation.amount);
+           
+         case 'approve':
+           return contract.approve(operation.to, operation.amount);
+           
+         default:
+           throw new Error(`Unsupported operation: ${operation.type}`);
+       }
+     };
+
+   export const createERC721Handler = () =>
+     async (
+       operation: Readonly<TokenOperation>
+     ): Promise<Readonly<TransactionResult>> => {
+       // Validate operation
+       const validateOperation = createERC721Validator();
+       const validationResult = await validateOperation(operation);
+       
+       if (!validationResult.valid) {
+         throw new Error(validationResult.errors.join(', '));
+       }
+
+       // Create contract instance
+       const contract = createERC721Contract(operation.token.address);
+       
+       // Execute operation
+       switch (operation.type) {
+         case 'transfer':
+           return contract.transferFrom(
+             operation.from,
+             operation.to,
+             operation.tokenId
+           );
+           
+         case 'approve':
+           return contract.approve(operation.to, operation.tokenId);
+           
+         default:
+           throw new Error(`Unsupported operation: ${operation.type}`);
+       }
+     };
+   ```
+
+4. Implementation Structure
+   ```
+   src/
+     tokens/           # Pure token functions
+       createTokenOperator.ts
+       createTokenHandler.ts
+     standards/       # Pure standard implementations
+       erc20/
+         handler.ts
+         validator.ts
+       erc721/
+         handler.ts
+         validator.ts
+     contracts/      # Contract interfaces
+       IERC20.ts
+       IERC721.ts
+     types/          # Shared type definitions
+       token.ts
+       operation.ts
+       result.ts
+   ```
+
+5. Test Structure
+   ```typescript
+   // Pure operator tests
+   describe('createTokenOperator', () => {
+     it('handles ERC20 transfers', async () => {
+       const operator = createTokenOperator({
+         address: '0x...',
+         standard: 'ERC20',
+         decimals: 18
+       });
+
+       const result = await operator({
+         type: 'transfer',
+         token: config,
+         from: '0x...',
+         to: '0x...',
+         amount: '1000000000000000000'
+       });
+       
+       expect(result.success).toBe(true);
+       expect(result.txHash).toBeDefined();
+     });
+
+     it('handles ERC721 transfers', async () => {
+       const operator = createTokenOperator({
+         address: '0x...',
+         standard: 'ERC721'
+       });
+
+       const result = await operator({
+         type: 'transfer',
+         token: config,
+         from: '0x...',
+         to: '0x...',
+         tokenId: '1'
+       });
+       
+       expect(result.success).toBe(true);
+       expect(result.txHash).toBeDefined();
+     });
+   });
+
+   // Pure handler tests
+   describe('createTokenHandler', () => {
+     it('validates ERC20 operations', async () => {
+       const handler = createTokenHandler('ERC20');
+       const result = await handler.validate({
+         type: 'transfer',
+         token: {
+           address: '0x...',
+           standard: 'ERC20'
+         },
+         from: '0x...',
+         to: '0x...',
+         amount: '1000'
+       });
+       
+       expect(result.valid).toBe(true);
+     });
+   });
+
+   // Integration tests
+   describe('Token Integration', () => {
+     it('performs cross-chain token transfer', async () => {
+       const operator = createTokenOperator({
+         address: '0x...',
+         standard: 'ERC20',
+         decimals: 18
+       });
+
+       const messageHandler = createMessageHandler({
+         validators: ['token'],
+         processors: ['transfer'],
+         errorHandlers: ['retry']
+       });
+
+       const result = await messageHandler({
+         id: '0x...',
+         origin: 1,
+         sender: '0x...',
+         message: encodeTokenTransfer({
+           token: config,
+           amount: '1000000000000000000'
+         })
+       });
+       
+       expect(result.status).toBe('processed');
+       expect(result.metadata.get('txHash')).toBeDefined();
+     });
+   });
+   ```
+
+Validation:
+- Function purity
+- Type safety
+- Standard compliance
+- Security checks
+
+PAUSE:
+- Run operator tests
+- Verify handlers
+- Check standards
+- Test integration
+
+Next Step:
+- Move to step9.txt (Security Integration) once all tests pass

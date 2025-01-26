@@ -1,0 +1,325 @@
+# Step 12: Monitoring
+-------------------------
+Purpose: Implement pure functions for monitoring and metrics with Hyperlane-specific considerations
+
+Documentation References:
+- ElizaOS Monitoring: https://elizaos.github.io/eliza/docs/monitoring/
+- Hyperlane Monitoring: https://docs.hyperlane.xyz/docs/operate/monitoring
+- Hyperlane Metrics: https://docs.hyperlane.xyz/docs/operate/monitoring/metrics
+
+Design Decisions:
+1. RPC Monitoring:
+   - Pure RPC monitor functions
+   - Immutable RPC state
+   - Composable monitor chain
+   Justification: Monitor RPC functionally
+
+2. Chain Monitoring:
+   - Pure chain monitor functions
+   - Immutable chain state
+   - Composable chain chain
+   Justification: Monitor chains functionally
+
+3. Message Monitoring:
+   - Pure message monitor functions
+   - Immutable message state
+   - Composable message chain
+   Justification: Monitor messages functionally
+
+Actions:
+1. Pure Monitor Types
+   ```typescript
+   export type RpcMetrics = Readonly<{
+     provider: string;
+     latency: number;
+     successRate: number;
+     errorRate: number;
+     metadata?: ReadonlyMap<string, unknown>;
+   }>;
+
+   export type ChainMetrics = Readonly<{
+     chain: string;
+     blockHeight: number;
+     gasPrice: number;
+     peers: number;
+     metadata: ReadonlyMap<string, unknown>;
+   }>;
+
+   export type MessageMetrics = Readonly<{
+     id: string;
+     origin: string;
+     destination: string;
+     status: string;
+     latency: number;
+     metadata: ReadonlyMap<string, unknown>;
+   }>;
+   ```
+
+2. Pure RPC Monitor Functions
+   ```typescript
+   export const createRpcMonitor = (
+     config: Readonly<MonitorConfig>
+   ) =>
+     async (
+       provider: string
+     ): Promise<Readonly<Result<RpcMetrics>>> => {
+       try {
+         // Monitor RPC health
+         const health = await monitorRpcHealth(provider);
+         
+         // Monitor latency
+         const latency = await monitorRpcLatency(provider);
+         
+         // Monitor success rate
+         const success = await monitorRpcSuccess(provider);
+         
+         return {
+           success: true,
+           data: {
+             provider,
+             latency: latency.average,
+             successRate: success.rate,
+             errorRate: 1 - success.rate,
+             metadata: new Map([
+               ['health', health],
+               ['timestamp', Date.now()]
+             ])
+           } as const
+         };
+       } catch (error) {
+         return {
+           success: false,
+           error: {
+             code: 'RPC_MONITOR_FAILED',
+             message: error.message,
+             context: new Map([['provider', provider]])
+           }
+         } as const;
+       }
+     };
+
+   export const createChainMonitor = (
+     config: Readonly<MonitorConfig>
+   ) =>
+     async (
+       chain: string
+     ): Promise<Readonly<Result<ChainMetrics>>> => {
+       try {
+         // Monitor block height
+         const height = await monitorBlockHeight(chain);
+         
+         // Monitor gas price
+         const gas = await monitorGasPrice(chain);
+         
+         // Monitor peers
+         const peers = await monitorPeers(chain);
+         
+         return {
+           success: true,
+           data: {
+             chain,
+             blockHeight: height,
+             gasPrice: gas,
+             peers,
+             metadata: new Map([
+               ['chain', chain],
+               ['timestamp', Date.now()]
+             ])
+           } as const
+         };
+       } catch (error) {
+         return {
+           success: false,
+           error: {
+             code: 'CHAIN_MONITOR_FAILED',
+             message: error.message,
+             context: new Map([['chain', chain]])
+           }
+         } as const;
+       }
+     };
+   ```
+
+3. Pure Message Monitor Functions
+   ```typescript
+   export const createMessageMonitor = (
+     config: Readonly<MonitorConfig>
+   ) =>
+     async (
+       message: string
+     ): Promise<Readonly<Result<MessageMetrics>>> => {
+       try {
+         // Monitor message status
+         const status = await monitorMessageStatus(message);
+         
+         // Monitor message latency
+         const latency = await monitorMessageLatency(message);
+         
+         // Monitor message path
+         const path = await monitorMessagePath(message);
+         
+         return {
+           success: true,
+           data: {
+             id: message,
+             origin: path.origin,
+             destination: path.destination,
+             status: status.current,
+             latency: latency.milliseconds,
+             metadata: new Map([
+               ['message', message],
+               ['timestamp', Date.now()]
+             ])
+           } as const
+         };
+       } catch (error) {
+         return {
+           success: false,
+           error: {
+             code: 'MESSAGE_MONITOR_FAILED',
+             message: error.message,
+             context: new Map([['message', message]])
+           }
+         } as const;
+       }
+     };
+
+   export const createMonitoringProcess = (
+     config: Readonly<MonitorConfig>
+   ) =>
+     async (
+       context: Readonly<MonitorContext>
+     ): Promise<Readonly<Result<void>>> => {
+       // Create monitoring steps
+       const steps = [
+         createRpcMonitor(config),
+         createChainMonitor(config),
+         createMessageMonitor(config)
+       ];
+       
+       try {
+         // Execute steps in parallel
+         const results = await Promise.all(
+           steps.map(step => step(context))
+         );
+         
+         // Check for failures
+         const failures = results.filter(r => !r.success);
+         
+         if (failures.length > 0) {
+           throw new Error(
+             `Monitoring failed: ${failures.map(f => f.error.message).join(', ')}`
+           );
+         }
+         
+         return {
+           success: true,
+           metadata: new Map([
+             ['context', context],
+             ['timestamp', Date.now()]
+           ])
+         } as const;
+       } catch (error) {
+         return {
+           success: false,
+           error: {
+             code: 'MONITORING_PROCESS_FAILED',
+             message: error.message,
+             context: new Map([['context', context]])
+           }
+         } as const;
+       }
+     };
+   ```
+
+4. Implementation Structure
+   ```
+   src/
+     monitoring/     # Pure monitoring functions
+       createRpcMonitor.ts
+       createChainMonitor.ts
+       createMessageMonitor.ts
+     metrics/       # Pure metrics implementations
+       rpc/
+         health.ts
+         latency.ts
+         success.ts
+       chain/
+         block.ts
+         gas.ts
+         peers.ts
+       message/
+         status.ts
+         latency.ts
+         path.ts
+     types/         # Shared type definitions
+       monitor.ts
+       metrics.ts
+       context.ts
+   ```
+
+5. Monitoring Examples
+   ```typescript
+   // Monitor RPC
+   const rpcMonitor = createRpcMonitor({
+     interval: 5000,
+     timeout: 10000,
+     thresholds: new Map([
+       ['latency', 1000],
+       ['success', 0.95]
+     ])
+   });
+
+   const rpcResult = await rpcMonitor('https://rpc1.example.com');
+
+   if (rpcResult.success) {
+     console.log('RPC metrics:', rpcResult.data);
+   }
+
+   // Monitor chain
+   const chainMonitor = createChainMonitor({
+     interval: 10000,
+     timeout: 20000,
+     thresholds: new Map([
+       ['block_time', 15000],
+       ['gas_price', 100]
+     ])
+   });
+
+   const chainResult = await chainMonitor('optimism');
+
+   if (chainResult.success) {
+     console.log('Chain metrics:', chainResult.data);
+   }
+
+   // Monitor message
+   const messageMonitor = createMessageMonitor({
+     interval: 15000,
+     timeout: 30000,
+     thresholds: new Map([
+       ['latency', 300000],
+       ['retries', 3]
+     ])
+   });
+
+   const messageResult = await messageMonitor('0x123...');
+
+   if (messageResult.success) {
+     console.log('Message metrics:', messageResult.data);
+   }
+   ```
+
+Validation:
+- RPC monitoring
+- Chain monitoring
+- Message monitoring
+- Metric collection
+
+PAUSE:
+- Test RPC metrics
+- Verify chain metrics
+- Check message metrics
+- Validate process
+
+Next Step:
+- Move to step13.txt (Testing) once monitoring is complete

@@ -1,0 +1,322 @@
+Documentation References:
+- ElizaOS Deployment: https://elizaos.github.io/eliza/docs/deployment/
+- Hyperlane Deployment: https://docs.hyperlane.xyz/docs/deploy/
+- Registry Guide: https://docs.hyperlane.xyz/docs/deploy/deploy-hyperlane
+
+# Step 15: Deployment
+-------------------------
+Purpose: Implement pure deployment functions for Hyperlane integration
+
+Design Decisions:
+1. Deployment Configuration:
+   - Pure deployment functions
+   - Immutable configurations
+   - Composable deployment steps
+   Justification: Deploy functionally
+
+2. Registry Submission:
+   - Pure submission functions
+   - Immutable metadata
+   - Composable verification
+   Justification: Submit functionally
+
+3. Production Setup:
+   - Pure setup functions
+   - Immutable state
+   - Composable infrastructure
+   Justification: Setup functionally
+
+Actions:
+1. Pure Deployment Types
+   ```typescript
+   /**
+    * Immutable deployment configuration
+    */
+   export type DeployConfig = Readonly<{
+     environment: 'testnet' | 'mainnet';
+     chains: ReadonlyArray<ChainConfig>;
+     validators: ReadonlyArray<ValidatorConfig>;
+     relayers: ReadonlyArray<RelayerConfig>;
+     metadata: ReadonlyMap<string, unknown>;
+   }>;
+
+   /**
+    * Pure deployment result
+    */
+   export type DeployResult = Readonly<{
+     success: boolean;
+     contracts: ReadonlyMap<string, string>;
+     addresses: ReadonlyMap<string, string>;
+     metadata: ReadonlyMap<string, unknown>;
+   }>;
+
+   /**
+    * Pure registry submission
+    */
+   export type RegistrySubmission = Readonly<{
+     name: string;
+     version: string;
+     contracts: ReadonlyMap<string, string>;
+     verification: ReadonlyMap<string, string>;
+     metadata: ReadonlyMap<string, unknown>;
+   }>;
+   ```
+
+2. Pure Deployment Functions
+   ```typescript
+   /**
+    * Creates a deployment process with pure function composition
+    * @param config - Immutable deployment configuration
+    * @returns Pure deployment function
+    */
+   export const createDeployment = (
+     config: Readonly<DeployConfig>
+   ) =>
+     async (
+       context: Readonly<DeployContext>
+     ): Promise<Readonly<DeployResult>> => {
+       try {
+         // Deploy core contracts
+         const core = await deployCoreContracts(config);
+         
+         // Deploy validators
+         const validators = await deployValidators(
+           config,
+           core.addresses
+         );
+         
+         // Deploy relayers
+         const relayers = await deployRelayers(
+           config,
+           core.addresses
+         );
+         
+         return {
+           success: true,
+           contracts: new Map([
+             ...core.contracts,
+             ...validators.contracts,
+             ...relayers.contracts
+           ]),
+           addresses: new Map([
+             ...core.addresses,
+             ...validators.addresses,
+             ...relayers.addresses
+           ]),
+           metadata: new Map([
+             ['config', config],
+             ['timestamp', Date.now()]
+           ])
+         } as const;
+       } catch (error) {
+         return {
+           success: false,
+           contracts: new Map(),
+           addresses: new Map(),
+           metadata: new Map([
+             ['error', error],
+             ['config', config]
+           ])
+         } as const;
+       }
+     };
+
+   /**
+    * Creates a registry submission with pure functions
+    * @param deployment - Immutable deployment result
+    * @returns Pure submission function
+    */
+   export const createSubmission = (
+     deployment: Readonly<DeployResult>
+   ) =>
+     async (
+       context: Readonly<SubmissionContext>
+     ): Promise<Readonly<RegistrySubmission>> => {
+       try {
+         // Verify contracts
+         const verification = await verifyContracts(
+           deployment.contracts
+         );
+         
+         // Create submission
+         return {
+           name: context.name,
+           version: context.version,
+           contracts: deployment.contracts,
+           verification,
+           metadata: new Map([
+             ['deployment', deployment],
+             ['context', context]
+           ])
+         } as const;
+       } catch (error) {
+         throw new Error(
+           `Submission failed: ${error.message}`
+         );
+       }
+     };
+   ```
+
+3. Pure Infrastructure Functions
+   ```typescript
+   /**
+    * Creates infrastructure with pure functions
+    * @param config - Infrastructure configuration
+    * @returns Pure infrastructure setup
+    */
+   export const createInfrastructure = (
+     config: Readonly<InfraConfig>
+   ) =>
+     async (
+       context: Readonly<InfraContext>
+     ): Promise<Readonly<InfraResult>> => {
+       try {
+         // Setup monitoring
+         const monitoring = await setupMonitoring(config);
+         
+         // Setup alerting
+         const alerting = await setupAlerting(config);
+         
+         // Setup scaling
+         const scaling = await setupScaling(config);
+         
+         return {
+           success: true,
+           services: new Map([
+             ['monitoring', monitoring],
+             ['alerting', alerting],
+             ['scaling', scaling]
+           ]),
+           metadata: new Map([
+             ['config', config],
+             ['context', context]
+           ])
+         } as const;
+       } catch (error) {
+         return {
+           success: false,
+           services: new Map(),
+           metadata: new Map([
+             ['error', error],
+             ['config', config]
+           ])
+         } as const;
+       }
+     };
+   ```
+
+4. Implementation Structure
+   ```
+   src/
+     deployment/     # Pure deployment functions
+       createDeployment.ts
+       createSubmission.ts
+       createInfrastructure.ts
+     contracts/     # Pure contract deployments
+       core/
+         deploy.ts
+         verify.ts
+       validators/
+         deploy.ts
+         verify.ts
+       relayers/
+         deploy.ts
+         verify.ts
+     infrastructure/ # Pure infrastructure setup
+       monitoring/
+         setup.ts
+         verify.ts
+       alerting/
+         setup.ts
+         verify.ts
+       scaling/
+         setup.ts
+         verify.ts
+     types/         # Shared type definitions
+       deploy.ts
+       submission.ts
+       infra.ts
+   ```
+
+5. Deployment Examples
+   ```typescript
+   // Deploy to testnet
+   const testnetConfig: DeployConfig = {
+     environment: 'testnet',
+     chains: [
+       {
+         name: 'goerli',
+         rpc: 'https://goerli.example.com'
+       },
+       {
+         name: 'mumbai',
+         rpc: 'https://mumbai.example.com'
+       }
+     ],
+     validators: [
+       {
+         address: '0x123...',
+         stake: '1000000'
+       }
+     ],
+     relayers: [
+       {
+         name: 'default',
+         gasLimit: 2000000
+       }
+     ],
+     metadata: new Map([
+       ['purpose', 'testing']
+     ])
+   } as const;
+
+   const deployment = createDeployment(testnetConfig);
+   const result = await deployment({
+     timestamp: Date.now(),
+     deployer: '0x456...'
+   });
+
+   // Submit to registry
+   const submission = createSubmission(result);
+   const registry = await submission({
+     name: 'eliza-hyperlane',
+     version: '1.0.0'
+   });
+
+   // Setup infrastructure
+   const infraConfig: InfraConfig = {
+     monitoring: {
+       provider: 'prometheus',
+       endpoint: 'https://prom.example.com'
+     },
+     alerting: {
+       provider: 'pagerduty',
+       apiKey: process.env.PD_API_KEY
+     },
+     scaling: {
+       provider: 'kubernetes',
+       cluster: 'prod-1'
+     }
+   } as const;
+
+   const infrastructure = createInfrastructure(infraConfig);
+   const infra = await infrastructure({
+     environment: 'production',
+     region: 'us-west-2'
+   });
+   ```
+
+Validation:
+- Deployment purity
+- Registry verification
+- Infrastructure setup
+- Security checks
+
+PAUSE:
+- Review deployment
+- Verify contracts
+- Check infrastructure
+- Validate security
+
+Next Step:
+- Move to step16.txt (Maintenance) once deployment is complete

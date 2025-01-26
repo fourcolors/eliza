@@ -1,0 +1,269 @@
+# Step 6: Message Actions & Providers
+-------------------------
+Documentation References:
+- ElizaOS Actions: https://elizaos.github.io/eliza/docs/actions/
+- Hyperlane Message Receiving: https://docs.hyperlane.xyz/docs/reference/messaging/receive
+- Hyperlane Security Modules: https://docs.hyperlane.xyz/docs/reference/ISM/specify-your-ISM
+
+Purpose: Implement pure functions for message handling and action providers
+
+Design Decisions:
+1. Message Handling:
+   - Pure message handlers
+   - Immutable message state
+   - Composable handler chain
+   Justification: Maintain functional purity in message processing
+
+2. Action Providers:
+   - Pure provider functions
+   - Immutable action state
+   - Composable provider chain
+   Justification: Enable pure functional access to actions
+
+3. Security Verification:
+   - Pure verification functions
+   - Immutable security state
+   - Composable verifier chain
+   Justification: Secure message handling with pure functions
+
+Actions:
+1. Pure Message Types
+   ```typescript
+   export type MessageHandler = Readonly<{
+     origin: number;
+     sender: string;
+     message: string;
+     metadata?: ReadonlyMap<string, unknown>;
+   }>;
+
+   export type ActionProvider = Readonly<{
+     name: string;
+     version: string;
+     actions: ReadonlyArray<string>;
+     metadata: ReadonlyMap<string, unknown>;
+   }>;
+
+   export type SecurityConfig = Readonly<{
+     module: string;
+     params: ReadonlyMap<string, unknown>;
+     verifiers: ReadonlyArray<string>;
+   }>;
+   ```
+
+2. Pure Handler Functions
+   ```typescript
+   export const createMessageHandler = (
+     security: Readonly<SecurityConfig>
+   ) =>
+     async (
+       params: Readonly<MessageHandler>
+     ): Promise<Readonly<Result<void>>> => {
+       // Verify message security
+       const verifyMessage = createSecurityVerifier(security);
+       const verificationResult = await verifyMessage(params);
+       
+       if (!verificationResult.success) {
+         return verificationResult;
+       }
+
+       try {
+         // Process message based on type
+         const processMessage = createMessageProcessor();
+         await processMessage(params);
+
+         return {
+           success: true,
+           metadata: new Map([
+             ['origin', params.origin],
+             ['sender', params.sender],
+             ['timestamp', Date.now()]
+           ])
+         } as const;
+       } catch (error) {
+         return {
+           success: false,
+           error: {
+             code: 'HANDLER_ERROR',
+             message: error.message,
+             context: new Map([['params', params]]),
+             timestamp: Date.now(),
+             recoverable: true
+           },
+           metadata: new Map()
+         } as const;
+       }
+     };
+
+   export const createSecurityVerifier = (
+     config: Readonly<SecurityConfig>
+   ) =>
+     async (
+       params: Readonly<MessageHandler>
+     ): Promise<Readonly<Result<void>>> => {
+       for (const verifier of config.verifiers) {
+         const verify = createVerifier(verifier, config.params);
+         const result = await verify(params);
+         
+         if (!result.success) {
+           return result;
+         }
+       }
+
+       return {
+         success: true,
+         metadata: new Map([
+           ['verifiers', config.verifiers],
+           ['timestamp', Date.now()]
+         ])
+       } as const;
+     };
+   ```
+
+3. Pure Provider Functions
+   ```typescript
+   export const createActionProvider = (
+     config: Readonly<ActionProvider>
+   ) =>
+     async (
+       filter?: Readonly<Record<string, unknown>>
+     ): Promise<ReadonlyArray<string>> => {
+       const filterActions = createActionFilter(filter);
+       return config.actions
+         .filter(filterActions)
+         .map(a => a as const);
+     };
+
+   export const createMessageProvider = (
+     hyperlane: Readonly<HyperlaneService>
+   ) =>
+     async (
+       domain: number
+     ): Promise<Readonly<Result<MessageHandler>>> => {
+       try {
+         const mailbox = await hyperlane.getMailbox(domain);
+         const messages = await mailbox.getMessages();
+
+         return {
+           success: true,
+           data: messages.map(msg => ({
+             origin: msg.origin,
+             sender: bytes32ToAddress(msg.sender),
+             message: msg.body,
+             metadata: new Map([
+               ['timestamp', msg.timestamp],
+               ['domain', domain]
+             ])
+           })) as const,
+           metadata: new Map([
+             ['count', messages.length],
+             ['domain', domain]
+           ])
+         } as const;
+       } catch (error) {
+         return {
+           success: false,
+           error: {
+             code: 'PROVIDER_ERROR',
+             message: error.message,
+             context: new Map([['domain', domain]]),
+             timestamp: Date.now(),
+             recoverable: true
+           },
+           metadata: new Map()
+         } as const;
+       }
+     };
+   ```
+
+4. Implementation Structure
+   ```
+   src/
+     handlers/          # Pure handler functions
+       createMessageHandler.ts
+       createSecurityVerifier.ts
+     providers/        # Pure provider functions
+       createActionProvider.ts
+       createMessageProvider.ts
+     types/           # Shared type definitions
+       handler.ts
+       provider.ts
+       security.ts
+     utils/           # Pure utility functions
+       security.ts
+       conversion.ts
+   ```
+
+5. Test Structure
+   ```typescript
+   // Pure handler tests
+   describe('createMessageHandler', () => {
+     it('handles valid messages', async () => {
+       const handler = createMessageHandler({
+         module: 'default',
+         params: new Map(),
+         verifiers: ['signature']
+       });
+
+       const result = await handler({
+         origin: 1,
+         sender: '0x...',
+         message: '0x...'
+       });
+       
+       expect(result.success).toBe(true);
+     });
+   });
+
+   // Pure provider tests
+   describe('createActionProvider', () => {
+     it('filters actions correctly', async () => {
+       const provider = createActionProvider({
+         name: 'test',
+         version: '1.0.0',
+         actions: ['transfer', 'approve'],
+         metadata: new Map()
+       });
+
+       const actions = await provider({
+         type: 'transfer'
+       });
+       
+       expect(actions).toHaveLength(1);
+       expect(actions[0]).toBe('transfer');
+     });
+   });
+
+   // Integration tests
+   describe('MessageHandling Integration', () => {
+     it('verifies and processes messages', async () => {
+       const handler = createMessageHandler({
+         module: 'default',
+         params: new Map(),
+         verifiers: ['signature', 'nonce']
+       });
+
+       const provider = createMessageProvider(realHyperlane);
+       const messages = await provider(1);
+       
+       for (const msg of messages.data) {
+         const result = await handler(msg);
+         expect(result.success).toBe(true);
+       }
+     });
+   });
+   ```
+
+Validation:
+- Function purity
+- Type safety
+- Security checks
+- Provider composition
+
+PAUSE:
+- Run handler tests
+- Verify providers
+- Check security
+- Test integration
+
+Next Step:
+- Move to step7.txt (Message Processing) once all tests pass

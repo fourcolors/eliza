@@ -1,0 +1,307 @@
+# Step 9: Security Integration
+-------------------------
+Purpose: Implement pure functions for cross-chain security verification
+
+Documentation References:
+- ElizaOS Security: https://elizaos.github.io/eliza/docs/security/
+- Hyperlane ISM: https://docs.hyperlane.xyz/docs/reference/ISM/specify-your-ISM
+- Hyperlane Security: https://docs.hyperlane.xyz/docs/reference/messaging/receive#verify
+
+Design Decisions:
+1. Security Modules:
+   - Pure module functions
+   - Immutable module state
+   - Composable module chain
+   Justification: Maintain functional purity in security
+
+2. Verification:
+   - Pure verify functions
+   - Immutable verify state
+   - Composable verifier chain
+   Justification: Ensure secure message verification
+
+3. Module Configuration:
+   - Pure config functions
+   - Immutable config state
+   - Composable config chain
+   Justification: Enable flexible security setup
+
+Actions:
+1. Pure Security Types
+   ```typescript
+   export type SecurityModule = Readonly<{
+     type: 'multisig' | 'merkle' | 'custom';
+     address: string;
+     metadata?: ReadonlyMap<string, unknown>;
+   }>;
+
+   export type VerifyParams = Readonly<{
+     message: string;
+     metadata: string;
+     origin: number;
+     sender: string;
+     module: SecurityModule;
+   }>;
+
+   export type VerifyResult = Readonly<{
+     valid: boolean;
+     error?: string;
+     metadata: ReadonlyMap<string, unknown>;
+   }>;
+   ```
+
+2. Pure Security Functions
+   ```typescript
+   export const createSecurityVerifier = (
+     module: Readonly<SecurityModule>
+   ) =>
+     async (
+       params: Readonly<VerifyParams>
+     ): Promise<Readonly<VerifyResult>> => {
+       // Get appropriate verifier
+       const verifier = createVerifier(module.type);
+       
+       try {
+         // Verify message
+         const result = await verifier.verify(params);
+         
+         return {
+           valid: result,
+           metadata: new Map([
+             ['module', module],
+             ['timestamp', Date.now()]
+           ])
+         } as const;
+       } catch (error) {
+         return {
+           valid: false,
+           error: error.message,
+           metadata: new Map([
+             ['module', module],
+             ['error', error],
+             ['timestamp', Date.now()]
+           ])
+         } as const;
+       }
+     };
+
+   export const createVerifier = (
+     type: string
+   ): Readonly<IVerifier> => {
+     switch (type) {
+       case 'multisig':
+         return {
+           verify: createMultisigVerifier(),
+           metadata: new Map([
+             ['type', 'multisig'],
+             ['version', '1.0.0']
+           ])
+         } as const;
+         
+       case 'merkle':
+         return {
+           verify: createMerkleVerifier(),
+           metadata: new Map([
+             ['type', 'merkle'],
+             ['version', '1.0.0']
+           ])
+         } as const;
+         
+       default:
+         throw new Error(`Unsupported verifier type: ${type}`);
+     }
+   };
+   ```
+
+3. Pure Module Functions
+   ```typescript
+   export const createMultisigVerifier = () =>
+     async (
+       params: Readonly<VerifyParams>
+     ): Promise<boolean> => {
+       // Create contract instance
+       const module = createMultisigModule(params.module.address);
+       
+       try {
+         // Verify signatures
+         return module.verify(
+           params.message,
+           params.metadata
+         );
+       } catch (error) {
+         throw new Error(`Multisig verification failed: ${error.message}`);
+       }
+     };
+
+   export const createMerkleVerifier = () =>
+     async (
+       params: Readonly<VerifyParams>
+     ): Promise<boolean> => {
+       // Create contract instance
+       const module = createMerkleModule(params.module.address);
+       
+       try {
+         // Verify merkle proof
+         return module.verify(
+           params.message,
+           params.metadata
+         );
+       } catch (error) {
+         throw new Error(`Merkle verification failed: ${error.message}`);
+       }
+     };
+
+   export const createSecurityModule = (
+     config: Readonly<SecurityModule>
+   ) =>
+     async (
+       mailbox: Readonly<IMailbox>
+     ): Promise<Readonly<Result<void>>> => {
+       try {
+         // Create module contract
+         const module = createModuleContract(config);
+         
+         // Set module on mailbox
+         await mailbox.setDefaultISM(module.address);
+         
+         return {
+           success: true,
+           metadata: new Map([
+             ['module', config],
+             ['mailbox', mailbox.address]
+           ])
+         } as const;
+       } catch (error) {
+         return {
+           success: false,
+           error: {
+             code: 'MODULE_SETUP_FAILED',
+             message: error.message,
+             context: new Map([['config', config]]),
+             timestamp: Date.now()
+           },
+           metadata: new Map()
+         } as const;
+       }
+     };
+   ```
+
+4. Implementation Structure
+   ```
+   src/
+     security/         # Pure security functions
+       createSecurityVerifier.ts
+       createVerifier.ts
+     modules/         # Pure module implementations
+       multisig/
+         verifier.ts
+         module.ts
+       merkle/
+         verifier.ts
+         module.ts
+     contracts/      # Module interfaces
+       ISecurityModule.ts
+       IVerifier.ts
+     types/          # Shared type definitions
+       security.ts
+       verify.ts
+       module.ts
+   ```
+
+5. Test Structure
+   ```typescript
+   // Pure verifier tests
+   describe('createSecurityVerifier', () => {
+     it('verifies valid messages', async () => {
+       const verifier = createSecurityVerifier({
+         type: 'multisig',
+         address: '0x...'
+       });
+
+       const result = await verifier({
+         message: '0x...',
+         metadata: '0x...',
+         origin: 1,
+         sender: '0x...',
+         module: config
+       });
+       
+       expect(result.valid).toBe(true);
+     });
+
+     it('handles invalid messages', async () => {
+       const verifier = createSecurityVerifier({
+         type: 'multisig',
+         address: '0x...'
+       });
+
+       const result = await verifier({
+         message: '0x...',
+         metadata: 'invalid',
+         origin: 1,
+         sender: '0x...',
+         module: config
+       });
+       
+       expect(result.valid).toBe(false);
+       expect(result.error).toBeDefined();
+     });
+   });
+
+   // Pure module tests
+   describe('createSecurityModule', () => {
+     it('configures modules correctly', async () => {
+       const module = createSecurityModule({
+         type: 'multisig',
+         address: '0x...'
+       });
+
+       const result = await module(mockMailbox);
+       
+       expect(result.success).toBe(true);
+       expect(mockMailbox.defaultISM()).toBe(config.address);
+     });
+   });
+
+   // Integration tests
+   describe('Security Integration', () => {
+     it('verifies cross-chain messages', async () => {
+       const verifier = createSecurityVerifier({
+         type: 'multisig',
+         address: '0x...'
+       });
+
+       const messageHandler = createMessageHandler({
+         validators: ['security'],
+         processors: ['verify'],
+         errorHandlers: ['retry']
+       });
+
+       const result = await messageHandler({
+         id: '0x...',
+         origin: 1,
+         sender: '0x...',
+         message: '0x...',
+         metadata: await generateMetadata()
+       });
+       
+       expect(result.status).toBe('processed');
+       expect(result.metadata.get('verified')).toBe(true);
+     });
+   });
+   ```
+
+Validation:
+- Function purity
+- Type safety
+- Module integrity
+- Verification chain
+
+PAUSE:
+- Run verifier tests
+- Check modules
+- Verify security
+- Test integration
+
+Next Step:
+- Move to step10.txt (Gas Management) once all tests pass

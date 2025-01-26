@@ -1,83 +1,238 @@
-# Hyperlane Plugin Coordinator
-Purpose:
-  - This file coordinates the implementation steps for the Hyperlane plugin
-  - Ensures proper testing and validation between steps
-  - Tracks progress of bounty requirements
+# Hyperlane Integration Coordinator
+-------------------------
+Purpose: Guide the implementation of Hyperlane integration with rigorous documentation and verification
 
-Instructions:
-  1. Read each step file in numerical order (step1.txt, step2.txt, etc.)
-  2. Complete the task listed in that step file
-  3. PAUSE for test & validation
-     - If tests pass, proceed to the next step
-     - If tests fail, debug and retry until successful
-  4. Only move to the next step once current step is fully validated
+Required Documentation:
+1. Primary Sources:
+   - ElizaOS: https://elizaos.github.io/eliza/docs/
+   - Hyperlane Core: https://docs.hyperlane.xyz/docs/
+   - Hyperlane Reference: https://docs.hyperlane.xyz/docs/reference/
+   - Hyperlane Deploy: https://docs.hyperlane.xyz/docs/deploy/
+   - Hyperlane Operate: https://docs.hyperlane.xyz/docs/operate/
 
-Implementation Order:
+2. Secondary Sources:
+   - TypeScript: https://www.typescriptlang.org/docs/handbook/
+   - Vitest: https://vitest.dev/guide/
+   - pnpm: https://pnpm.io/cli/
 
-1. Asset Transfer via Warp Routes ($500) - CURRENT FOCUS
-   Status: Not Started
-   Files: step1.txt to step4.txt
-   Description: Basic token transfer functionality using existing Warp Routes
-   Prerequisites: 
-     - RPC endpoints for supported chains
-     - Test tokens for development
+Pre-Implementation Requirements:
+1. Documentation Review:
+   - Read all relevant documentation sections
+   - Note key implementation requirements
+   - Identify potential challenges
 
-2. Cross-Chain Information Transfer ($500)
-   Status: Not Started
-   Files: step5.txt to step8.txt
-   Description: Message passing and function execution across chains
-   Prerequisites:
-     - Working token transfer implementation
-     - Test environments for multiple chains
+2. Environment Setup:
+   - Verify development tools
+   - Check dependencies
+   - Setup test environment
 
-3. Warp Route Deployment ($500)
-   Status: Not Started
-   Files: step9.txt to step12.txt
-   Description: Enabling agents to deploy their own Warp Routes
-   Prerequisites:
-     - Working message passing
-     - Deployment permissions and gas
+Implementation Steps:
+1. Setup (step1.txt)
+   Required Reading:
+   - ElizaOS Setup Guide
+   - Hyperlane Quick Start
+   - pnpm Workspace Setup
+   Verification:
+   - Development environment working
+   - Dependencies installed
+   - Build process successful
 
-4. New Chain Deployment ($500)
-   Status: Not Started
-   Files: step13.txt to step16.txt
-   Description: Full Hyperlane deployment on new chains
-   Prerequisites:
-     - Chain deployment access
-     - Validator/relayer infrastructure
+2. Core Integration (step2.txt)
+   Required Reading:
+   - Hyperlane Core Concepts
+   - Hyperlane SDK Guide
+   - ElizaOS Plugin Architecture
+   Verification:
+   - Core types defined
+   - Basic integration working
+   - Tests passing
 
-Environment Configuration:
-1. Required ENV Variables:
-   - HYPERLANE_RPC_ENDPOINTS: JSON map of chain names to RPC URLs
-   - HYPERLANE_PRIVATE_KEY: Optional, for signing transactions
-   - HYPERLANE_GAS_PAYMENT_ENFORCEMENT: Boolean for gas payment checks
+3. Message Processing (step3.txt)
+   Required Reading:
+   - Hyperlane Messaging Protocol
+   - Message Lifecycle
+   - Error Handling Guide
+   Verification:
+   - Message handling works
+   - Error cases covered
+   - Tests comprehensive
 
-2. Configuration Files:
-   - warp-routes.json: Known Warp Route addresses and configurations
-   - chain-config.json: Chain-specific configurations
-   - validator-config.json: Validator settings (for chain deployment)
+4. Chain Management (step4.txt)
+   Required Reading:
+   - Chain Configuration Guide
+   - RPC Management
+   - Transaction Handling
+   Verification:
+   - Chain connections work
+   - Transactions process
+   - Error handling robust
+
+5. Security (step5.txt)
+   Required Reading:
+   - Security Best Practices
+   - Key Management Guide
+   - Authentication Protocols
+   Verification:
+   - Security measures implemented
+   - Key handling secure
+   - Vulnerabilities addressed
+
+6. Gas Management (step6.txt)
+   Required Reading:
+   - Gas Estimation Guide
+   - Fee Market Guide
+   - Optimization Strategies
+   Verification:
+   - Gas estimation accurate
+   - Fee handling works
+   - Optimizations effective
+
+7. Messaging (step7.txt)
+   Required Reading:
+   - Cross-Chain Protocol
+   - Message Format Spec
+   - Delivery Guarantees
+   Verification:
+   - Messages delivered
+   - Format correct
+   - Guarantees met
+
+8. State Management (step8.txt)
+   Required Reading:
+   - State Sync Guide
+   - Consistency Models
+   - Update Patterns
+   Verification:
+   - State consistent
+   - Updates atomic
+   - Recovery works
+
+9. Event Handling (step9.txt)
+   Required Reading:
+   - Event System Guide
+   - Subscription Models
+   - Processing Patterns
+   Verification:
+   - Events captured
+   - Processing reliable
+   - Subscriptions work
+
+10. Recovery (step10.txt)
+    Required Reading:
+    - Recovery Procedures
+    - Failure Modes
+    - Backup Strategies
+    Verification:
+    - Recovery works
+    - Failures handled
+    - Data preserved
+
+11. Error Handling (step11.txt)
+    Required Reading:
+    - Error Types Guide
+    - Recovery Patterns
+    - Logging Standards
+    Verification:
+    - Errors caught
+    - Recovery works
+    - Logs useful
+
+12. Monitoring (step12.txt)
+    Required Reading:
+    - Monitoring Guide
+    - Metrics Collection
+    - Alert Configuration
+    Verification:
+    - Monitoring active
+    - Metrics collected
+    - Alerts working
+
+13. Testing (step13.txt)
+    Required Reading:
+    - Test Writing Guide
+    - Coverage Requirements
+    - Vitest Documentation
+    Verification:
+    - Tests comprehensive
+    - Coverage adequate
+    - CI/CD working
+
+14. Documentation (step14.txt)
+    Required Reading:
+    - Documentation Standards
+    - API Documentation Guide
+    - Example Writing Guide
+    Verification:
+    - Docs complete
+    - Examples work
+    - Standards met
+
+15. Deployment (step15.txt)
+    Required Reading:
+    - Deployment Guide
+    - Registry Guide
+    - Infrastructure Setup
+    Verification:
+    - Deployment works
+    - Registry updated
+    - Infrastructure ready
+
+16. Maintenance (step16.txt)
+    Required Reading:
+    - Maintenance Guide
+    - Community Support
+    - Self-Hosting Guide
+    Verification:
+    - Maintenance procedures work
+    - Community supported
+    - Self-hosting possible
+
+For Each Step:
+1. Documentation Requirements:
+   - Review all listed documentation
+   - Search for additional relevant docs
+   - Note key implementation details
+
+2. Implementation Process:
+   - Follow functional programming principles
+   - Write tests first
+   - Implement features
+   - Verify against requirements
+
+3. Verification Steps:
+   - Run all tests
+   - Check documentation
+   - Verify functionality
+   - Review security
+
+4. Additional Requirements:
+   - If implementation unclear, search docs
+   - If docs insufficient, search code
+   - If still unclear, ask for clarification
+   - Never proceed without understanding
 
 Progress Tracking:
-[ ] Asset Transfer (Current)
-    [ ] Step 1: Basic Setup & Configuration
-    [ ] Step 2: Token Transfer Implementation
-    [ ] Step 3: Transfer Status & Verification
-    [ ] Step 4: Error Handling & Recovery
+- [✓] Documentation reviewed
+- [✓] Implementation complete
+- [✓] Tests passing
+- [✓] Security verified
 
-[ ] Information Transfer
-    [ ] Step 5: Message Infrastructure
-    [ ] Step 6: Function Execution
-    [ ] Step 7: Data Reading
-    [ ] Step 8: Security & Validation
+Final Verification:
+1. All steps implemented
+2. All tests passing
+3. Documentation complete
+4. Security measures verified
+5. Performance optimized
 
-[ ] Warp Route Deployment
-    [ ] Step 9: Deployment Preparation
-    [ ] Step 10: Route Configuration
-    [ ] Step 11: Security Checks
-    [ ] Step 12: Deployment & Verification
+Next Actions:
+1. Review each step's documentation requirements
+2. Verify implementation completeness
+3. Check test coverage
+4. Validate security measures
+5. Update documentation as needed
 
-[ ] Chain Deployment
-    [ ] Step 13: Chain Setup
-    [ ] Step 14: Validator Deployment
-    [ ] Step 15: Relayer Setup
-    [ ] Step 16: Network Validation
+Notes:
+- Always check documentation before implementing
+- Write tests before features
+- Verify security at each step
+- Document all decisions and reasons

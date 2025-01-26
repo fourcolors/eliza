@@ -1,69 +1,217 @@
-# Step 3: Transfer Status & Verification
+# Step 3: Message Tracking and Status Providers
 -------------------------
-Purpose: Implement pure functions for tracking and verifying cross-chain transfers
+Purpose: Implement pure functions for message tracking and status management
+
+Documentation References:
+- ElizaOS State Management: https://elizaos.github.io/eliza/docs/state/
+- Hyperlane Message Debugging: https://docs.hyperlane.xyz/docs/guides/message-debugging
+- Hyperlane CLI Status: https://docs.hyperlane.xyz/docs/reference/cli
+
+Design Decisions:
+1. Message Status:
+   - Pure status types
+   - Immutable message state
+   - Event-driven updates
+   Justification: Predictable state transitions and pure functions
+
+2. Status Tracking:
+   - Pure tracking functions
+   - Immutable message history
+   - Composable status updates
+   Justification: Maintain functional purity while tracking state
+
+3. Provider Pattern:
+   - Pure provider functions
+   - Immutable provider state
+   - Composable providers
+   Justification: Enable pure functional access to message state
 
 Actions:
-1. Status Types
+1. Pure Message Types
    ```typescript
-   export interface TransferStatus {
-     readonly messageId: string;
-     readonly sourceChain: string;
-     readonly destinationChain: string;
-     readonly status: 'pending' | 'delivered' | 'failed';
-     readonly timestamp: number;
-     readonly gasPayment?: string;
-     readonly error?: string;
-   }
+   export type MessageStatus = 
+     | 'pending'
+     | 'delivered'
+     | 'failed'
+     | 'relayed';
 
-   export interface VerificationResult {
-     readonly isValid: boolean;
-     readonly transferStatus: TransferStatus;
-     readonly proofOfDelivery?: string;
-     readonly validationErrors: ReadonlyArray<string>;
-   }
+   export type MessageState = Readonly<{
+     id: string;
+     status: MessageStatus;
+     origin: number;
+     destination: number;
+     timestamp: number;
+     metadata: ReadonlyMap<string, unknown>;
+   }>;
+
+   export type MessageUpdate = Readonly<{
+     id: string;
+     status: MessageStatus;
+     timestamp: number;
+     metadata?: ReadonlyMap<string, unknown>;
+   }>;
    ```
 
 2. Pure Status Functions
-   - createGetTransferStatus
-   - createVerifyTransfer
-   - createGetProofOfDelivery
-   - createValidateProof
+   ```typescript
+   export const createStatusTracker = (
+     storage: Readonly<StorageService>
+   ) =>
+     async (
+       messageId: string
+     ): Promise<Readonly<MessageState>> => {
+       const message = await storage.getMessage(messageId);
+       
+       if (!message) {
+         return {
+           id: messageId,
+           status: 'failed',
+           timestamp: Date.now(),
+           metadata: new Map([
+             ['error', 'Message not found']
+           ])
+         } as const;
+       }
 
-3. Implementation Structure
+       const status = await determineMessageStatus(message);
+       return {
+         ...message,
+         status,
+         timestamp: Date.now()
+       } as const;
+     };
+
+   export const createStatusUpdater = (
+     storage: Readonly<StorageService>
+   ) =>
+     async (
+       update: Readonly<MessageUpdate>
+     ): Promise<Readonly<MessageState>> => {
+       const message = await storage.getMessage(update.id);
+       
+       if (!message) {
+         throw new Error('Message not found');
+       }
+
+       const newState = {
+         ...message,
+         status: update.status,
+         timestamp: update.timestamp,
+         metadata: new Map([
+           ...message.metadata,
+           ...(update.metadata || new Map())
+         ])
+       } as const;
+
+       await storage.saveMessage(newState);
+       return newState;
+     };
+   ```
+
+3. Pure Provider Functions
+   ```typescript
+   export const createMessageProvider = (
+     storage: Readonly<StorageService>
+   ) =>
+     async (
+       filter?: Readonly<MessageFilter>
+     ): Promise<ReadonlyArray<MessageState>> => {
+       const messages = await storage.listMessages(filter);
+       return messages.map(msg => ({
+         ...msg,
+         status: determineMessageStatus(msg)
+       })) as const;
+     };
+
+   export const createStatusProvider = (
+     hyperlane: Readonly<HyperlaneService>
+   ) =>
+     async (
+       messageId: string
+     ): Promise<Readonly<MessageStatus>> => {
+       const mailbox = await hyperlane.getMailbox(0); // Domain 0 for status
+       const delivered = await mailbox.delivered(messageId);
+       
+       return delivered ? 'delivered' : 'pending' as const;
+     };
+   ```
+
+4. Implementation Structure
    ```
    src/
-     status/
-       types/
-         status.ts
-         verification.ts
-       functions/
-         get-status.ts
-         verify-transfer.ts
-         proof.ts
-       utils/
-         status-helpers.ts
-       tests/
-         status.test.ts
-         verification.test.ts
+     tracking/          # Pure tracking functions
+       createStatusTracker.ts
+       createStatusUpdater.ts
+     providers/        # Pure provider functions
+       createMessageProvider.ts
+       createStatusProvider.ts
+     types/           # Shared type definitions
+       message.ts
+       status.ts
+       update.ts
+     utils/           # Pure utility functions
+       status.ts
+       validation.ts
    ```
 
-4. Test Cases
-   - Unit tests for status functions
-   - Verification test scenarios
-   - Proof validation tests
-   - Error handling tests
+5. Test Structure
+   ```typescript
+   // Pure function tests
+   describe('createStatusTracker', () => {
+     it('tracks message status changes', async () => {
+       const tracker = createStatusTracker(mockStorage);
+       const state = await tracker('message-1');
+       
+       expect(state.status).toBe('pending');
+       expect(state.metadata).toBeInstanceOf(Map);
+     });
+   });
+
+   // Provider tests
+   describe('createMessageProvider', () => {
+     it('provides filtered messages', async () => {
+       const provider = createMessageProvider(mockStorage);
+       const messages = await provider({
+         status: 'delivered'
+       });
+       
+       expect(messages).toHaveLength(1);
+       expect(messages[0].status).toBe('delivered');
+     });
+   });
+
+   // Integration tests
+   describe('StatusTracking Integration', () => {
+     it('updates message status', async () => {
+       const tracker = createStatusTracker(realStorage);
+       const updater = createStatusUpdater(realStorage);
+       
+       const initial = await tracker('message-1');
+       expect(initial.status).toBe('pending');
+       
+       await updater({
+         id: 'message-1',
+         status: 'delivered',
+         timestamp: Date.now()
+       });
+       
+       const final = await tracker('message-1');
+       expect(final.status).toBe('delivered');
+     });
+   });
+   ```
 
 Validation:
-- Pure function implementation
-- Immutable status tracking
-- Comprehensive verification
-- Proper error handling
+- Function purity
+- Type safety
+- Status transitions
+- Provider composition
 
 PAUSE:
-- Run status test suite
-- Verify proof validation
-- Check error scenarios
-- Validate status tracking
+- Run tracking tests
+- Verify providers
+- Check status updates
+- Test message queries
 
 Next Step:
-- Move to step4.txt (Error Handling & Recovery) once all tests pass
+- Move to step4.txt (Error Handling) once all tests pass

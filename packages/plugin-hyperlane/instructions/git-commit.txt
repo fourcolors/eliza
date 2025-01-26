@@ -1,0 +1,221 @@
+# Git Commit Message Guidelines
+-------------------------
+Purpose: Ensure consistent and informative commit messages using conventional commits
+
+Documentation References:
+- Conventional Commits: https://www.conventionalcommits.org/
+- Angular Commit Guidelines: https://github.com/angular/angular/blob/main/CONTRIBUTING.md#commit
+- Semantic Versioning: https://semver.org/
+
+## Commit Message Format
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+## Types
+1. feat: A new feature
+   ```
+   feat(messaging): add cross-chain message verification
+   
+   - Implements message verification using Hyperlane ISM
+   - Adds signature validation for messages
+   - Includes rollback mechanism for failed verifications
+   
+   Closes #123
+   ```
+
+2. fix: A bug fix
+   ```
+   fix(gas): correct gas estimation for optimism chain
+   
+   Previous estimation was not accounting for L2 gas model.
+   Added L2 specific calculations and safety margin.
+   
+   Fixes #456
+   ```
+
+3. docs: Documentation only changes
+   ```
+   docs(api): update message handling documentation
+   
+   - Clarifies message lifecycle
+   - Adds error handling examples
+   - Updates API reference
+   ```
+
+4. style: Changes that don't affect code meaning
+   ```
+   style(lint): fix linting issues in message handler
+   
+   - Fix whitespace
+   - Order imports
+   - Remove unused imports
+   ```
+
+5. refactor: Code change that neither fixes a bug nor adds a feature
+   ```
+   refactor(chain): simplify chain connection logic
+   
+   - Extract connection logic to pure functions
+   - Remove duplicate code
+   - Improve type safety
+   ```
+
+6. perf: Code change that improves performance
+   ```
+   perf(cache): optimize message caching strategy
+   
+   - Implement LRU cache
+   - Add cache size limits
+   - Optimize cache key generation
+   
+   Improves message retrieval by 50%
+   ```
+
+7. test: Adding missing tests or correcting existing tests
+   ```
+   test(recovery): add tests for message recovery
+   
+   - Add unit tests for recovery logic
+   - Add integration tests for chain failures
+   - Add E2E tests for recovery flow
+   
+   Coverage increased to 95%
+   ```
+
+8. build: Changes that affect the build system or dependencies
+   ```
+   build(deps): update hyperlane-sdk to v2.5.0
+   
+   - Update SDK version
+   - Update dependent types
+   - Fix breaking changes
+   
+   Breaking Changes:
+   - MessageHandler interface changed
+   - New gas estimation required
+   ```
+
+9. ci: Changes to CI configuration files and scripts
+   ```
+   ci(workflow): add vitest coverage reporting
+   
+   - Add coverage collection
+   - Configure report upload
+   - Add coverage badges
+   ```
+
+10. chore: Other changes that don't modify src or test files
+    ```
+    chore(release): prepare for v1.2.0 release
+    
+    - Update changelog
+    - Bump version
+    - Update documentation
+    ```
+
+## Scope
+- messaging: Message handling and processing
+- chain: Chain connection and management
+- gas: Gas estimation and management
+- security: Security and validation
+- types: Type definitions and interfaces
+- test: Test infrastructure
+- docs: Documentation
+- build: Build process
+- deps: Dependencies
+- release: Release process
+
+## Best Practices
+1. Commit Structure:
+   - Keep first line under 72 characters
+   - Use imperative mood ("add" not "added")
+   - Capitalize first letter
+   - No period at end of first line
+
+2. Body Format:
+   - Leave one blank line after title
+   - Wrap body at 72 characters
+   - Use bullet points for multiple changes
+   - Explain what and why, not how
+
+3. Footer Format:
+   - Reference issues: "Fixes #123"
+   - Note breaking changes: "BREAKING CHANGE:"
+   - List multiple issues: "Closes #123, #456"
+
+4. Examples of Good Commits:
+   ```
+   feat(security): implement message validation middleware
+   
+   - Add signature verification
+   - Implement rate limiting
+   - Add request validation
+   
+   This improves message security by ensuring all messages
+   are properly signed and rate limited per chain.
+   
+   Closes #789
+   ```
+
+   ```
+   fix(chain): handle optimism transaction failures
+   
+   Previous implementation didn't properly handle L2
+   transaction failures. Now we:
+   - Detect L2 specific errors
+   - Implement proper retry logic
+   - Add failure logging
+   
+   Fixes #321
+   ```
+
+5. Common Mistakes to Avoid:
+   - Don't mix multiple changes in one commit
+   - Don't use vague messages
+   - Don't skip the body for complex changes
+   - Don't forget to reference related issues
+
+## Commit Process
+1. Stage Changes:
+   ```bash
+   git add <files>
+   ```
+
+2. Review Changes:
+   ```bash
+   git status
+   git diff --staged
+   ```
+
+3. Create Commit:
+   ```bash
+   git commit
+   ```
+
+4. Write Message:
+   - Use format: <type>(<scope>): <description>
+   - Add detailed body
+   - Reference issues
+   - Note breaking changes
+
+5. Verify Commit:
+   ```bash
+   git log -1
+   ```
+
+## Automation
+Consider using commit message tools:
+- commitlint: Lint commit messages
+- commitizen: Interactive commit message CLI
+- husky: Git hooks for validation
+
+Remember:
+- Quality commits improve collaboration
+- Good messages help with debugging
+- Proper format enables automation
+- Clear history aids maintenance
