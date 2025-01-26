@@ -725,6 +725,94 @@ Operational Requirements:
 - [ ] Recovery procedures documented
 - [ ] Support runbook created
 
+## Environment Configuration Management
+The .env file needs to be updated in the following scenarios:
+
+1. Initial Setup
+   ```bash
+   # Copy example env file
+   cp .env.example .env
+   
+   # Required Hyperlane Configuration
+   HYPERLANE_CORE_ADDRESS=        # Core contract address
+   HYPERLANE_ISM_ADDRESS=         # Default ISM address
+   HYPERLANE_MAILBOX_ADDRESS=     # Mailbox contract address
+   
+   # Chain RPC Configuration
+   ETHEREUM_RPC_URL=              # Ethereum RPC endpoint
+   OPTIMISM_RPC_URL=              # Optimism RPC endpoint
+   ARBITRUM_RPC_URL=              # Arbitrum RPC endpoint
+   
+   # API Keys and Security
+   INFURA_API_KEY=                # For Infura RPC access
+   ALCHEMY_API_KEY=               # For Alchemy RPC access
+   ETHERSCAN_API_KEY=             # For contract verification
+   
+   # Gas Configuration
+   GAS_MULTIPLIER=1.2             # Default gas price multiplier
+   MAX_GAS_PRICE=100              # Maximum gas price in gwei
+   ```
+
+2. Update Triggers
+   The .env file needs updating when:
+   - Adding new chain support
+   - Changing RPC providers
+   - Updating contract addresses
+   - Modifying gas settings
+   - Adding new API integrations
+   - Changing security settings
+
+3. Chain-Specific Updates
+   When adding a new chain:
+   ```bash
+   # Add chain RPC
+   [CHAIN_NAME]_RPC_URL=
+   
+   # Add chain-specific contracts
+   [CHAIN_NAME]_MAILBOX_ADDRESS=
+   [CHAIN_NAME]_ISM_ADDRESS=
+   
+   # Optional chain settings
+   [CHAIN_NAME]_GAS_MULTIPLIER=
+   [CHAIN_NAME]_MAX_GAS_PRICE=
+   ```
+
+4. Security Considerations
+   - Never commit .env file
+   - Use separate .env files for different environments
+   - Rotate API keys regularly
+   - Use minimum required permissions
+   - Keep backup of configuration
+
+5. Validation Steps
+   After updating .env:
+   ```bash
+   # Verify environment loading
+   pnpm test:env
+   
+   # Check chain connections
+   pnpm test:chains
+   
+   # Verify contract access
+   pnpm test:contracts
+   ```
+
+6. Environment Sync
+   When working across environments:
+   - Keep .env.example updated
+   - Document required variables
+   - Note default values
+   - Include validation rules
+   - Update deployment guides
+
+7. Troubleshooting
+   If environment issues occur:
+   - Check variable names match .env.example
+   - Verify RPC endpoints are accessible
+   - Confirm API keys are valid
+   - Check contract addresses exist
+   - Verify environment is loaded
+
 ## Notes & Best Practices
 
 1. Documentation First:
