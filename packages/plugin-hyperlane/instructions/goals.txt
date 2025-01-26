@@ -1,67 +1,91 @@
-Goals for the Hyperlane Plugin:
+# Hyperlane Plugin Bounty Requirements
 
-1. Cross-Chain Communication
-- Enable secure message passing between different blockchain networks
-- Support message retrieval and status checking
-- Handle message delivery confirmations
+## Overview
+This document outlines the bounty requirements and success criteria for the Hyperlane Plugin project. For detailed implementation goals and project coordination, refer to coordinator.txt.
 
-2. Functional Design
-- Implement pure functions for all operations
-- Maintain immutable data structures
-- Avoid side effects in core logic
+## Bounty Structure (XL - $5,000)
+The bounty is divided into four independent components, each worth $500. Full completion of all components awards the complete $5,000 bounty.
 
-3. Error Handling
-- Provide clear error messages for common failure scenarios
-- Implement proper error recovery mechanisms
-- Validate inputs before operations
+### A. Asset Transfer via Warp Routes ($500)
+Success Criteria:
+1. Warp Route Integration
+   - Successfully initialize and configure Warp Routes
+   - Support multiple token types and standards
+   - Handle gas estimation and fee calculations
 
-4. Testing
-- Unit tests for all core functions
-- Integration tests for cross-chain operations
-- Test coverage for error scenarios
+2. Token Transfer Functionality
+   - Enable cross-chain token transfers
+   - Support both native and wrapped tokens
+   - Provide transaction status tracking
 
-5. Documentation
-- Clear API documentation
-- Usage examples
-- Configuration guide
+3. Transfer Verification
+   - Implement confirmation mechanisms
+   - Provide transfer receipt validation
+   - Handle failed transfer scenarios
 
-6. Performance
-- Optimize gas usage for cross-chain operations
-- Efficient message handling
-- Minimize unnecessary blockchain calls
+### B. Cross-Chain Information Transfer ($500)
+Success Criteria:
+1. Message Passing System
+   - Enable cross-chain function calls
+   - Support arbitrary message payloads
+   - Implement message queuing and retry logic
 
-7. Security
-- Secure message passing
-- Protected RPC endpoints
-- Safe private key handling
+2. Data Access
+   - Enable cross-chain data reads
+   - Support structured data formats
+   - Handle data validation and verification
 
-8. Maintainability
-- Clean code structure
-- Clear separation of concerns
-- Well-documented interfaces
+3. Message Verification
+   - Implement message authenticity checks
+   - Provide delivery confirmations
+   - Handle message expiration
 
-9. Bounty Requirements (XL - $5,000)
+### C. Warp Route Deployment ($500)
+Success Criteria:
+1. Deployment Interface
+   - Support custom route deployment
+   - Enable route parameter configuration
+   - Provide deployment status tracking
 
-A. Asset Transfer via Warp Routes ($500)
-- Implement Warp Route integration for cross-chain asset transfers
-- Enable agents to transfer tokens across supported chains
-- Handle transfer confirmations and status tracking
+2. Configuration Management
+   - Support custom fee settings
+   - Enable gas limit configurations
+   - Allow custom token mappings
 
-B. Cross-Chain Information Transfer ($500)
-- Enable function calls across chains via Hyperlane messaging
-- Support cross-chain data reads
-- Implement message verification and delivery confirmation
+3. Security Features
+   - Implement ownership verification
+   - Provide access control mechanisms
+   - Include security validation checks
 
-C. Warp Route Deployment ($500)
-- Allow agents to deploy their own Warp Routes
-- Provide configuration options for route parameters
-- Include validation and security checks for deployments
+### D. New Chain Deployment ($500)
+Success Criteria:
+1. Validator Setup
+   - Support validator deployment
+   - Enable quorum configuration
+   - Implement stake management
 
-D. New Chain Deployment ($500)
-- Enable agents to deploy Hyperlane on new chains
-- Support validator quorum setup and management
-- Implement relayer deployment and operation
-- Include monitoring and maintenance capabilities
+2. Infrastructure Management
+   - Support relayer deployment
+   - Enable monitoring setup
+   - Provide maintenance tools
 
-Note: Each component (A-D) can be completed independently for a $500 bounty.
-Full completion of all components awards the full $5,000 bounty.
+3. Chain Integration
+   - Support new chain configuration
+   - Enable RPC management
+   - Implement chain validation
+
+## Verification Requirements
+Each component must meet the following criteria:
+1. Complete test coverage
+2. Documentation of features
+3. Security review completion
+4. Performance optimization
+5. Error handling implementation
+
+## Submission Guidelines
+1. Each component can be submitted independently
+2. Code must pass all automated tests
+3. Documentation must be complete
+4. Security requirements must be met
+
+For implementation details and project management, refer to coordinator.txt.
