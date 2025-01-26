@@ -1,368 +1,114 @@
 # Hyperlane Integration Coordinator
--------------------------
-Purpose: Guide the implementation of Hyperlane integration with rigorous documentation and verification
 
-## Project Goals & Guidelines
-See: [Project Goals](goals.txt)
+Lightweight, powerful guide for integrating Hyperlane with ElizaOS.  
+**Rule #1**: Always consult and update documentation first—no coding without reading!
 
-Key Objectives:
-1. **Cross-Chain Communication**  
-   - **Objective**: Facilitate secure, reliable message passing between distinct blockchain networks.  
-   - **Key Actions**:  
-     - Integrate Hyperlane message passing for cross-chain function calls.  
-     - Implement robust event and message status tracking.  
-     - Verify payload integrity and authenticity.  
-   - **Relevant Bounty Items**: (B) Cross-Chain Information Transfer.
+---
 
-2. **Warp Routes & Asset Transfer**  
-   - **Objective**: Provide a seamless interface for transferring assets across supported chains.  
-   - **Key Actions**:  
-     - Integrate Warp Route logic.  
-     - Track and confirm cross-chain transfers.  
-     - Provide a clean API for token transfers.  
-   - **Relevant Bounty Items**: (A) Asset Transfer via Warp Routes, (C) Warp Route Deployment.
+## 1. Documentation First Approach
 
-3. **New Chain Deployment**  
-   - **Objective**: Expand Hyperlane integration to new chains, ensuring easy setup and consistent security.  
-   - **Key Actions**:  
-     - Automate scripts for validator and ISM deployment.  
-     - Infrastructure checks for chain readiness.  
-     - Provide a guide for ongoing maintenance.  
-   - **Relevant Bounty Items**: (D) New Chain Deployment.
+### Required Reads
+- [ElizaOS Core Docs](https://elizaos.github.io/eliza/docs/core)
+- [Hyperlane Protocol Docs](https://docs.hyperlane.xyz)
+- [Plugin Architecture](https://elizaos.github.io/eliza/docs/plugins)
+- [Service Integration](https://elizaos.github.io/eliza/docs/services)
 
-4. **Functional (Pure) Design**  
-   - **Objective**: Maintain immutability and stateless logic wherever possible for predictability and safety.  
-   - **Key Actions**:  
-     - Use pure functions for validation and data transformation.  
-     - Keep side-effect operations isolated.  
+### Documentation Workflow
+1. **Review** existing docs (Eliza, Hyperlane, plugin repos, GitHub issues).
+2. **Update** relevant sections before coding.
+3. **Document** design decisions and rationale.
+4. **Sync** any changes with your code and keep docs updated in real time.
+5. **Avoid** obvious comments, use block comments only for non-self-explanatory code.
 
-5. **Error Handling & Recovery**  
-   - **Objective**: Provide robust, user-friendly error messages and fallback routines for failed operations.  
-   - **Key Actions**:  
-     - Validate inputs before cross-chain calls.  
-     - Implement retry or rollback mechanisms.  
-     - Log errors with structured data for debugging.  
+---
 
-6. **Testing & Verification**  
-   - **Objective**: Achieve comprehensive coverage for both unit and E2E cross-chain scenarios.  
-   - **Key Actions**:  
-     - Write unit tests for core modules.  
-     - Run integration tests simulating real cross-chain calls.  
-     - Cover error paths (invalid keys, network timeouts).  
+## 2. Project Goals & Key Objectives
+See: [Project Goals](goals.txt) for complete details.
 
-7. **Documentation & Configuration Guide**  
-   - **Objective**: Produce clear, developer-friendly documentation for all features, especially cross-chain flows.  
-   - **Key Actions**:  
-     - Provide usage examples (sending tokens, deploying routes).  
-     - Include a 'Getting Started' section for `.env` setup.  
-     - Highlight common pitfalls (misconfigured chain IDs, missing private keys).  
+1. **Cross-Chain Communication**
+   - Integrate Hyperlane message passing for cross-chain calls.
+   - Provide robust event/status tracking and payload integrity checks.
 
-8. **Performance Optimization**  
-   - **Objective**: Minimize on-chain overhead while maximizing throughput for cross-chain operations.  
-   - **Key Actions**:  
-     - Audit gas usage for Warp Route calls.  
-     - Use caching strategies where appropriate.  
-     - Consolidate redundant blockchain calls.  
+2. **Warp Routes & Asset Transfer**
+   - Implement Warp Route logic for seamless cross-chain token moves.
+   - Offer a clean API for these transfers, with thorough status checks.
 
-9. **Security Enhancements**  
-   - **Objective**: Harden plugin code against exploits and ensure safe private key storage.  
-   - **Key Actions**:  
-     - Leverage Hyperlane's security modules.  
-     - Validate inbound messages against replay attacks.  
-     - Provide guidelines on private key management.  
+3. **New Chain Deployment**
+   - Automate scripts for validator & ISM deployment to new chains.
+   - Provide a step-by-step setup guide (ensuring consistent security).
 
-10. **Maintainability & Future-Proofing**  
-    - **Objective**: Keep a clean, modular architecture and thorough documentation so the plugin can evolve smoothly.  
-    - **Key Actions**:  
-      - Separate concerns (messaging, bridging, route deployment) in distinct modules.  
-      - Maintain a stable API layer.  
-      - Encourage community contributions via a well-structured repo.
+4. **Functional (Pure) Design**
+   - Use immutable data structures and avoid side effects.
+   - Keep functions pure and composable.
+   - Isolate side effects to specific boundaries.
+   - Follow established design patterns.
 
-## Project Resumption Workflow
-When returning to the project:
+5. **Error Handling & Recovery**
+   - Validate inputs pre-cross-chain calls.
+   - Implement retry/rollback for failed ops.
+   - Provide structured logs for debugging.
+   - Handle edge cases thoroughly.
 
-1. Project Status Review
-   ```bash
-   # Update local repository
-   git fetch origin
-   git status
-   
-   # Review recent changes
-   git log -n 5
-   
-   # Check uncommitted work
-   git diff
-   ```
+6. **Testing & Verification**
+   - Write unit tests before implementation.
+   - Use vitest for all testing.
+   - Cover edge cases and error paths.
+   - Achieve high test coverage (≥85%).
+   - Include integration tests for cross-chain flows.
 
-2. Implementation Progress
-   - Review implementation-checklist.md for last completed items
-   - Check current branch state and any pending changes
-   - Review any open pull requests or issues
+7. **Documentation & Configuration Guide**
+   - Maintain dev-friendly docs on usage, `.env` setup, common pitfalls.
+   - Keep code, docs, and examples aligned.
+   - Document design decisions and rationale.
 
-3. Environment Setup
-   ```bash
-   # Update dependencies
-   pnpm install
-   
-   # Rebuild project
-   pnpm build
-   
-   # Run tests for Hyperlane plugin only
-   cd packages/plugin-hyperlane && pnpm test
-   ```
+8. **Performance Optimization**
+   - Reduce on-chain overhead, optimize cross-chain throughput.
+   - Audit gas usage for bridging and warp route calls.
+   - Use efficient data structures and algorithms.
 
-4. Context Recovery
-   - Review last modified files in git history
-   - Check current step file's verification checklist
-   - Review any documented blockers or dependencies
-   - Check coordinator.txt for last recorded state
+9. **Security Enhancements**
+   - Integrate Hyperlane security modules.
+   - Validate messages to prevent replay attacks.
+   - Provide best practices for private key handling.
 
-5. Next Steps Determination
-   a. If there are uncommitted changes:
-      - Review the changes for completeness
-      - Complete any unfinished implementations
-      - Run tests and verify functionality
-      - Commit if ready, following git-commit.txt guidelines
-   
-   b. If last step was completed:
-      - Check implementation-checklist.md for next priority
-      - Review dependencies and blockers
-      - Begin next task according to priorities
-   
-   c. If last step was incomplete:
-      - Review step's verification checklist
-      - Complete remaining checklist items
-      - Update implementation-checklist.md
-      - Follow standard completion workflow
+10. **Maintainability & Future-Proofing**
+    - Use modular, functional programming approach.
+    - Keep modules pure and side-effect free.
+    - Maintain stable APIs.
+    - Follow framework conventions.
 
-6. Task Prioritization
-   Consider:
-   - Security-critical features first
-   - Dependencies between components
-   - Test coverage requirements
-   - Documentation needs
+---
 
-## Implementation Progress
-After completing each step:
-1. Update implementation-checklist.md with completed items
-2. Review remaining items in implementation-checklist.md
-3. Determine next priority based on:
-   - Dependencies between tasks
-   - Security requirements
-   - Testing coverage
-   - Current completion status
+## 3. Implementation Guidelines
+See: [Commit Reviewer Guidelines](commit-reviewer.txt) for detailed code quality and security requirements.
 
-## Step Completion Workflow
-1. Complete current step's implementation
-2. Run all tests and verify functionality
-3. Update implementation-checklist.md
-4. Review code changes and determine if a git commit is needed:
-   - Have new files been added?
-   - Have existing files been modified?
-   - Do the changes represent a complete logical unit?
-   - Are the changes ready for review?
-5. If commit needed:
-   - Review git-commit.txt for commit message guidelines
-   - Stage changes with appropriate grouping
-   - Create commit with descriptive message
-   - Verify commit contents
-6. Review remaining checklist items
-7. Select next task based on priorities and dependencies
-8. Document any blockers or dependencies
+### Development Flow
+1. **Pre-Implementation**
+   - Read ALL relevant documentation first.
+   - Write test cases before implementation.
+   - Plan functional approach.
+   - Review commit-reviewer.txt checklist.
 
-Note: Do not automatically proceed to the next numbered step. Instead:
-1. Check implementation-checklist.md for completion status
-2. Identify any incomplete items from previous steps
-3. Select the next task that has all dependencies satisfied
-4. Prioritize security-critical features
+2. **Implementation**
+   - Follow functional programming principles:
+     * Use immutable data structures
+     * Avoid side effects
+     * Write pure functions
+     * Apply design patterns
+   - Adhere to commit-reviewer.txt for:
+     * Code quality standards
+     * Security requirements
+     * Performance guidelines
+     * Testing requirements
 
-## Problem Detection and Resolution Workflow
-After each task and before moving to the next:
+3. **Post-Implementation**
+   - Run full test suite with vitest.
+   - Run pnpm build.
+   - Update documentation.
+   - Submit for review using commit-reviewer.txt checklist.
+   - Follow git-commit.txt guidelines for commit messages.
 
-1. Code Quality Check
-   ```bash
-   # Run TypeScript compiler checks
-   pnpm tsc --noEmit
-   
-   # Run linter
-   pnpm lint
-   
-   # Run Prettier
-   pnpm format
-   ```
-
-2. Test Coverage Analysis
-   ```bash
-   # Run tests with coverage
-   pnpm test --coverage
-   
-   # Check for failing tests
-   pnpm test
-   ```
-
-3. Security Scan
-   - Run dependency vulnerability check
-   ```bash
-   pnpm audit
-   ```
-   - Check for common security issues:
-     * Exposed API keys or secrets
-     * Unsafe type assertions
-     * Missing input validation
-     * Unhandled error cases
-     * Potential memory leaks
-
-4. Performance Check
-   - Review gas optimization for cross-chain operations
-   - Check for unnecessary re-renders or computations
-   - Verify efficient data structures usage
-   - Monitor memory usage patterns
-   - Check for proper async/await usage
-
-5. Integration Verification
-   - Verify Hyperlane core service integration
-   - Check cross-chain message handling
-   - Validate token bridge operations
-   - Test interoperability with other chains
-   - Verify ISM (Inter-chain Security Module) integration
-
-6. Plugin-Specific Checks
-   - Verify ElizaOS plugin interface compliance
-   - Check plugin configuration handling
-   - Validate event emission and handling
-   - Verify proper cleanup on plugin disable
-   - Check resource management
-
-7. Documentation Review
-   - Verify API documentation accuracy
-   - Check for outdated examples
-   - Update changelog if needed
-   - Review error messages and logs
-   - Update troubleshooting guides
-
-8. Problem Resolution
-   If issues are found:
-   a. Security Issues:
-      - Immediately address security vulnerabilities
-      - Update dependencies if needed
-      - Add security tests
-      - Document security fixes
-   
-   b. Code Quality Issues:
-      - Fix type errors
-      - Address linter warnings
-      - Format code
-      - Improve error handling
-   
-   c. Test Issues:
-      - Fix failing tests
-      - Add missing test cases
-      - Improve test coverage
-      - Update test documentation
-   
-   d. Performance Issues:
-      - Optimize slow operations
-      - Reduce gas costs
-      - Improve memory usage
-      - Update performance documentation
-   
-   e. Integration Issues:
-      - Fix cross-chain communication
-      - Update chain configurations
-      - Verify message passing
-      - Test with multiple chains
-
-9. Verification After Fixes
-   - Run all checks again
-   - Verify no new issues introduced
-   - Update relevant documentation
-   - Create regression tests if needed
-
-## Core Functionality Verification
-After each task and before proceeding:
-
-1. Build Check
-   ```bash
-   # Build the entire project
-   pnpm build
-   
-   # Build plugin specifically
-   cd packages/plugin-hyperlane && pnpm build
-   ```
-
-2. Character Creation Verification
-   ```bash
-   # Start ElizaOS
-   cd ../.. && pnpm start
-   
-   # In another terminal, test character creation:
-   curl -X POST http://localhost:3000/api/characters \
-     -H "Content-Type: application/json" \
-     -d '{"name": "TestCharacter", "plugins": ["hyperlane"]}'
-   
-   # Verify character can use Hyperlane features:
-   curl -X POST http://localhost:3000/api/characters/TestCharacter/actions \
-     -H "Content-Type: application/json" \
-     -d '{"action": "checkDomains"}'
-   ```
-
-3. Plugin Integration Check
-   - Verify plugin loads without errors
-   - Check plugin configuration is loaded
-   - Verify plugin services start correctly
-   - Test plugin event handling
-   - Check plugin cleanup on character deletion
-
-4. Core Feature Verification
-   Each step must maintain these core capabilities:
-   - Character creation with Hyperlane plugin
-   - Basic message sending between chains
-   - Token transfer capabilities
-   - Chain status checking
-   - Plugin configuration management
-
-5. Error Recovery Check
-   - Verify character remains functional if:
-     * Network is unavailable
-     * Chain is congested
-     * Message delivery is delayed
-     * Token bridge is paused
-   - Test graceful degradation of features
-   - Verify error messages are user-friendly
-
-6. State Management
-   - Verify character state persistence
-   - Check plugin state management
-   - Test state recovery after restart
-   - Verify no state corruption during operations
-
-7. If Issues Found:
-   a. Build Issues:
-      - Fix compilation errors
-      - Resolve dependency conflicts
-      - Update build configuration
-      - Verify all modules build
-   
-   b. Character Creation Issues:
-      - Debug plugin initialization
-      - Fix configuration loading
-      - Resolve service startup issues
-      - Update error handling
-   
-   c. Integration Issues:
-      - Fix plugin registration
-      - Update service connections
-      - Resolve event handling
-      - Fix cleanup procedures
-
-8. Verification After Fixes
-   - Rebuild entire project
-   - Create new test character
-   - Verify all core features
-   - Test error scenarios
-   - Document any workarounds
-
-## Version Control Guidelines
+### Version Control Guidelines
 See: [Git Commit Instructions](git-commit.txt)
 
 Commit Types:
@@ -388,7 +134,37 @@ feat(messaging): implement cross-chain message verification
 Closes #123
 ```
 
-## Documentation Sources & References
+### Problem Resolution
+- **Security Issues**: Fix immediately, update dependencies if needed.
+- **Code Quality Issues**: Address per commit-reviewer.txt; ensure tests are updated.
+- **Package Updates**: Always ask before updating versions, verify compatibility.
+- **Edge Cases**: Double check all edge cases in implementation.
+
+---
+
+## 4. Implementation Steps
+
+| Step                           | Owner             | Status                                       |
+|--------------------------------|-------------------|----------------------------------------------|
+| **1. Message Processing**      | Developer         | ✅ Planning \| ✅ Dev \| ✅ Test \| ✅ Review \| ✅ Complete |
+| **2. Chain Management**        | Senior Dev        | ✅ Planning \| ☐ Dev \| ☐ Test \| ☐ Review \| ☐ Complete    |
+| **3. Security Implementation** | Security Team     | ☐ Planning \| ☐ Dev \| ☐ Test \| ☐ Review \| ☐ Complete    |
+| **4. Gas Management**          | Senior Dev        | ☐ Planning \| ☐ Dev \| ☐ Test \| ☐ Review \| ☐ Complete    |
+| **5. State Management**        | Senior Dev        | ☐ Planning \| ☐ Dev \| ☐ Test \| ☐ Review \| ☐ Complete    |
+| **6. Testing & Deployment**    | DevOps Team       | ☐ Planning \| ☐ Dev \| ☐ Test \| ☐ Review \| ☐ Complete    |
+
+**Documentation Links**  
+- Hyperlane Messaging Protocol  
+- Message Lifecycle  
+- Chain Configuration  
+- Security Best Practices  
+- Gas Estimation & Fee Market  
+- State Sync & Consistency  
+- Deployment & Monitoring  
+
+---
+
+## 5. Documentation Sources & References
 | Category | Source | Owner | Purpose |
 |----------|---------|--------|----------|
 | Primary | [ElizaOS Docs](https://elizaos.github.io/eliza/docs/) | Platform Team | Core platform understanding |
@@ -400,441 +176,170 @@ Closes #123
 | Secondary | [Vitest Guide](https://vitest.dev/guide/) | QA Team | Testing framework |
 | Secondary | [pnpm CLI](https://pnpm.io/cli/) | Development Team | Package management |
 
-## Pre-Implementation Requirements
-
-### 1. Documentation Review
-Owner: Technical Lead
-Status: [ ] Not Started [ ] In Progress [ ] Complete [ ] Verified
-
-Tasks:
-- [ ] Review all documentation sections
-- [ ] Document key implementation requirements
-- [ ] Create implementation checklist
-- [ ] Share findings with team
-
-⚠️ Pitfalls:
-- Missing critical security documentation
-- Overlooking version compatibility
-- Incomplete requirement gathering
-
-### 2. Environment Setup
-Owner: DevOps Lead
-Status: [ ] Not Started [ ] In Progress [ ] Complete [ ] Verified
-
-Tasks:
-- [ ] Verify development tools
-- [ ] Install and configure dependencies
-- [ ] Setup test environment
-- [ ] Validate CI/CD pipeline
-
-⚠️ Pitfalls:
-- Incompatible dependency versions
-- Missing environment variables
-- Insufficient access permissions
-
-## Implementation Steps
-
-### 1. Setup (step1.txt)
-Owner: Development Team Lead
-Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
-
-Required Reading:
-- ElizaOS Setup Guide → [Setup Documentation](https://elizaos.github.io/eliza/docs/setup)
-- Hyperlane Quick Start → [Quick Start Guide](https://docs.hyperlane.xyz/docs/quick-start)
-- pnpm Workspace Setup → [Workspace Guide](https://pnpm.io/workspaces)
-
-🎯 Design Rationale:
-- Using pnpm for better dependency management and workspace support
-- Implementing modular architecture for maintainability
-- Following TypeScript best practices for type safety
-
-⚠️ Pitfalls:
-- Incorrect workspace configuration
-- Missing peer dependencies
-- Incompatible Node.js version
-
-Verification Checklist:
-- [ ] Development environment operational
-- [ ] All dependencies installed and verified
-- [ ] Build process successful
-- [ ] Initial tests passing
-
-### 2. Core Integration (step2.txt)
-Owner: Senior Developer
-Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
-
-Required Reading:
-- Hyperlane Core Concepts → [Core Documentation](https://docs.hyperlane.xyz/docs/core-concepts)
-- Hyperlane SDK Guide → [SDK Documentation](https://docs.hyperlane.xyz/docs/sdk)
-- ElizaOS Plugin Architecture → [Plugin Guide](https://elizaos.github.io/eliza/docs/plugins)
-
-🎯 Design Rationale:
-- Implementing functional programming patterns for predictability
-- Using TypeScript interfaces for type safety
-- Leveraging ElizaOS plugin system for extensibility
-
-⚠️ Pitfalls:
-- Tight coupling with Hyperlane internals
-- Insufficient error handling
-- Missing type definitions
-
-Verification Checklist:
-- [ ] Core types defined
-- [ ] Basic integration working
-- [ ] Tests passing
-
-### 3. Message Processing (step3.txt)
-Owner: Developer
-Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
-
-Required Reading:
-- Hyperlane Messaging Protocol → [Protocol Documentation](https://docs.hyperlane.xyz/docs/messaging-protocol)
-- Message Lifecycle → [Lifecycle Documentation](https://docs.hyperlane.xyz/docs/message-lifecycle)
-- Error Handling Guide → [Error Handling Documentation](https://docs.hyperlane.xyz/docs/error-handling)
-
-Verification Checklist:
-- [ ] Message handling works
-- [ ] Error cases covered
-- [ ] Tests comprehensive
-
-### 4. Chain Management (step4.txt)
-Owner: Senior Developer
-Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
-
-Required Reading:
-- Chain Configuration Guide → [Configuration Documentation](https://docs.hyperlane.xyz/docs/chain-configuration)
-- RPC Management → [RPC Documentation](https://docs.hyperlane.xyz/docs/rpc-management)
-- Transaction Handling → [Transaction Documentation](https://docs.hyperlane.xyz/docs/transaction-handling)
-
-Verification Checklist:
-- [ ] Chain connections work
-- [ ] Transactions process
-- [ ] Error handling robust
-
-### 5. Security (step5.txt)
-Owner: Security Team
-Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
-
-Required Reading:
-- Security Best Practices → [Security Documentation](https://docs.hyperlane.xyz/docs/security-best-practices)
-- Key Management Guide → [Key Management Documentation](https://docs.hyperlane.xyz/docs/key-management)
-- Authentication Protocols → [Authentication Documentation](https://docs.hyperlane.xyz/docs/authentication-protocols)
-
-Verification Checklist:
-- [ ] Security measures implemented
-- [ ] Key handling secure
-- [ ] Vulnerabilities addressed
-
-### 6. Gas Management (step6.txt)
-Owner: Senior Developer
-Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
-
-Required Reading:
-- Gas Estimation Guide → [Gas Estimation Documentation](https://docs.hyperlane.xyz/docs/gas-estimation)
-- Fee Market Guide → [Fee Market Documentation](https://docs.hyperlane.xyz/docs/fee-market)
-- Optimization Strategies → [Optimization Documentation](https://docs.hyperlane.xyz/docs/optimization-strategies)
-
-Verification Checklist:
-- [ ] Gas estimation accurate
-- [ ] Fee handling works
-- [ ] Optimizations effective
-
-### 7. Messaging (step7.txt)
-Owner: Developer
-Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
-
-Required Reading:
-- Cross-Chain Protocol → [Protocol Documentation](https://docs.hyperlane.xyz/docs/cross-chain-protocol)
-- Message Format Spec → [Format Documentation](https://docs.hyperlane.xyz/docs/message-format-spec)
-- Delivery Guarantees → [Guarantees Documentation](https://docs.hyperlane.xyz/docs/delivery-guarantees)
-
-Verification Checklist:
-- [ ] Messages delivered
-- [ ] Format correct
-- [ ] Guarantees met
-
-### 8. State Management (step8.txt)
-Owner: Senior Developer
-Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
-
-Required Reading:
-- State Sync Guide → [State Sync Documentation](https://docs.hyperlane.xyz/docs/state-sync)
-- Consistency Models → [Consistency Documentation](https://docs.hyperlane.xyz/docs/consistency-models)
-- Update Patterns → [Update Documentation](https://docs.hyperlane.xyz/docs/update-patterns)
-
-Verification Checklist:
-- [ ] State consistent
-- [ ] Updates atomic
-- [ ] Recovery works
-
-### 9. Event Handling (step9.txt)
-Owner: Developer
-Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
-
-Required Reading:
-- Event System Guide → [Event Documentation](https://docs.hyperlane.xyz/docs/event-system)
-- Subscription Models → [Subscription Documentation](https://docs.hyperlane.xyz/docs/subscription-models)
-- Processing Patterns → [Processing Documentation](https://docs.hyperlane.xyz/docs/processing-patterns)
-
-Verification Checklist:
-- [ ] Events captured
-- [ ] Processing reliable
-- [ ] Subscriptions work
-
-### 10. Recovery (step10.txt)
-Owner: Senior Developer
-Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
-
-Required Reading:
-- Recovery Procedures → [Recovery Documentation](https://docs.hyperlane.xyz/docs/recovery-procedures)
-- Failure Modes → [Failure Documentation](https://docs.hyperlane.xyz/docs/failure-modes)
-- Backup Strategies → [Backup Documentation](https://docs.hyperlane.xyz/docs/backup-strategies)
-
-Verification Checklist:
-- [ ] Recovery works
-- [ ] Failures handled
-- [ ] Data preserved
-
-### 11. Error Handling (step11.txt)
-Owner: QA Team
-Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
-
-Required Reading:
-- Error Types Guide → [Error Types Documentation](https://docs.hyperlane.xyz/docs/error-types)
-- Recovery Patterns → [Recovery Patterns Documentation](https://docs.hyperlane.xyz/docs/recovery-patterns)
-- Logging Standards → [Logging Documentation](https://docs.hyperlane.xyz/docs/logging-standards)
-
-Verification Checklist:
-- [ ] Errors caught
-- [ ] Recovery works
-- [ ] Logs useful
-
-### 12. Monitoring (step12.txt)
-Owner: Operations Team
-Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
-
-Required Reading:
-- Monitoring Guide → [Monitoring Documentation](https://docs.hyperlane.xyz/docs/monitoring)
-- Metrics Collection → [Metrics Documentation](https://docs.hyperlane.xyz/docs/metrics-collection)
-- Alert Configuration → [Alert Documentation](https://docs.hyperlane.xyz/docs/alert-configuration)
-
-Verification Checklist:
-- [ ] Monitoring active
-- [ ] Metrics collected
-- [ ] Alerts working
-
-### 13. Testing (step13.txt)
-Owner: QA Team
-Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
-
-Required Reading:
-- Test Writing Guide → [Test Documentation](https://docs.hyperlane.xyz/docs/test-writing)
-- Coverage Requirements → [Coverage Documentation](https://docs.hyperlane.xyz/docs/coverage-requirements)
-- Vitest Documentation → [Vitest Documentation](https://vitest.dev/guide/)
-
-Verification Checklist:
-- [ ] Tests comprehensive
-- [ ] Coverage adequate
-- [ ] CI/CD working
-
-### 14. Documentation (step14.txt)
-Owner: Documentation Team
-Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
-
-Required Reading:
-- Documentation Standards → [Standards Documentation](https://docs.hyperlane.xyz/docs/documentation-standards)
-- API Documentation Guide → [API Documentation](https://docs.hyperlane.xyz/docs/api-documentation)
-- Example Writing Guide → [Example Documentation](https://docs.hyperlane.xyz/docs/example-writing)
-
-Verification Checklist:
-- [ ] Docs complete
-- [ ] Examples work
-- [ ] Standards met
-
-### 15. Deployment (step15.txt)
-Owner: DevOps Team
-Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
-
-Required Reading:
-- Deployment Guide → [Deployment Documentation](https://docs.hyperlane.xyz/docs/deployment)
-- Registry Guide → [Registry Documentation](https://docs.hyperlane.xyz/docs/registry)
-- Infrastructure Setup → [Infrastructure Documentation](https://docs.hyperlane.xyz/docs/infrastructure-setup)
-
-Verification Checklist:
-- [ ] Deployment works
-- [ ] Registry updated
-- [ ] Infrastructure ready
-
-### 16. Maintenance (step16.txt)
-Owner: Operations Team
-Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
-
-Required Reading:
-- Maintenance Guide → [Maintenance Documentation](https://docs.hyperlane.xyz/docs/maintenance)
-- Community Support → [Community Documentation](https://docs.hyperlane.xyz/docs/community-support)
-- Self-Hosting Guide → [Self-Hosting Documentation](https://docs.hyperlane.xyz/docs/self-hosting)
-
-Verification Checklist:
-- [ ] Maintenance procedures work
-- [ ] Community supported
-- [ ] Self-hosting possible
-
-## Progress Tracking Matrix
-
-| Step | Planning | Development | Testing | Review | Complete |
-|------|----------|-------------|----------|---------|-----------|
-| Setup | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Core Integration | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Message Processing | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Chain Management | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Security | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Gas Management | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Messaging | [ ] | [ ] | [ ] | [ ] | [ ] |
-| State Management | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Event Handling | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Recovery | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Error Handling | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Monitoring | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Testing | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Documentation | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Deployment | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Maintenance | [ ] | [ ] | [ ] | [ ] | [ ] |
-
-## Quality Gates
-
-Each step must pass the following gates:
-1. [ ] Documentation complete and reviewed
-2. [ ] Implementation follows functional programming principles
-3. [ ] Test coverage meets minimum threshold (>85%)
-4. [ ] Security review completed
-5. [ ] Performance benchmarks met
-
-## Final Verification Checklist
-
-Technical Requirements:
-- [ ] All steps implemented and tested
-- [ ] Complete test coverage achieved
-- [ ] Security measures verified
+---
+
+## 6. Environment Configuration Management
+
+### Initial Setup
+```bash
+# Copy example env file
+cp .env.example .env
+```
+
+### Configuration Categories
+1. **Chain Configuration**
+   - RPC endpoints
+   - Contract addresses
+   - Network-specific settings
+
+2. **API Keys**
+   - Provider keys
+   - Explorer API keys
+
+3. **Gas Settings**
+   - Multipliers
+   - Price limits
+   - Chain-specific overrides
+
+4. **Security**
+   - ISM configurations
+   - Validator settings
+   - Key management
+
+### Update Triggers
+- Adding new chains or modifying existing ones
+- Changing RPC providers or contract addresses
+- Adjusting gas settings or security keys
+
+### Validation Steps
+After updating .env:
+```bash
+# Verify environment loading
+pnpm test:env
+
+# Check chain connections
+pnpm test:chains
+
+# Verify contract access
+pnpm test:contracts
+```
+
+### Troubleshooting
+If environment issues occur:
+- Check variable names match .env.example
+- Verify RPC endpoints are accessible
+- Confirm API keys are valid
+- Check contract addresses exist
+- Verify environment is loaded
+
+---
+
+## 7. Quality Gates
+All changes must pass the following gates as defined in commit-reviewer.txt:
+
+1. **Documentation** complete & reviewed
+2. **Functional Programming**:
+   - Pure functions
+   - Immutable data structures
+   - No side effects
+   - Clear design patterns
+3. **Testing**:
+   - Unit tests with vitest
+   - Integration tests
+   - ≥85% coverage
+4. **Security** review completed
+5. **Performance** benchmarks met
+6. **Code Quality**:
+   - Follow framework conventions
+   - No obvious comments
+   - Block comments only for complex logic
+7. **Version Control**:
+   - Follow git-commit.txt
+   - Clear commit messages
+   - Reference issues
+
+---
+
+## 8. Final Verification Checklist
+
+### Technical
+- [ ] All steps tested & verified
+- [ ] Security measures in place
 - [ ] Performance optimized
 - [ ] Documentation updated
+- [ ] Commit messages follow git-commit.txt
+- [ ] All tests passing with vitest
+- [ ] Build successful with pnpm
 
-Operational Requirements:
-- [ ] Monitoring in place
-- [ ] Alerts configured
-- [ ] Backup procedures tested
-- [ ] Recovery procedures documented
-- [ ] Support runbook created
+### Operational
+- [ ] Monitoring + alerts configured
+- [ ] Backups tested
+- [ ] Recovery playbooks documented
+- [ ] Support runbook in place
 
-## Environment Configuration Management
-The .env file needs to be updated in the following scenarios:
+---
 
-1. Initial Setup
-   ```bash
-   # Copy example env file
-   cp .env.example .env
-   
-   # Required Hyperlane Configuration
-   HYPERLANE_CORE_ADDRESS=        # Core contract address
-   HYPERLANE_ISM_ADDRESS=         # Default ISM address
-   HYPERLANE_MAILBOX_ADDRESS=     # Mailbox contract address
-   
-   # Chain RPC Configuration
-   ETHEREUM_RPC_URL=              # Ethereum RPC endpoint
-   OPTIMISM_RPC_URL=              # Optimism RPC endpoint
-   ARBITRUM_RPC_URL=              # Arbitrum RPC endpoint
-   
-   # API Keys and Security
-   INFURA_API_KEY=                # For Infura RPC access
-   ALCHEMY_API_KEY=               # For Alchemy RPC access
-   ETHERSCAN_API_KEY=             # For contract verification
-   
-   # Gas Configuration
-   GAS_MULTIPLIER=1.2             # Default gas price multiplier
-   MAX_GAS_PRICE=100              # Maximum gas price in gwei
-   ```
+## 9. Step Progression & Decision Making
 
-2. Update Triggers
-   The .env file needs updating when:
-   - Adding new chain support
-   - Changing RPC providers
-   - Updating contract addresses
-   - Modifying gas settings
-   - Adding new API integrations
-   - Changing security settings
+### When to Commit
+Commit when you have:
+1. Completed a logical unit of work
+2. Added new functionality with tests
+3. Fixed a bug with regression tests
+4. Updated documentation that stands alone
+5. Made significant refactoring changes
 
-3. Chain-Specific Updates
-   When adding a new chain:
-   ```bash
-   # Add chain RPC
-   [CHAIN_NAME]_RPC_URL=
-   
-   # Add chain-specific contracts
-   [CHAIN_NAME]_MAILBOX_ADDRESS=
-   [CHAIN_NAME]_ISM_ADDRESS=
-   
-   # Optional chain settings
-   [CHAIN_NAME]_GAS_MULTIPLIER=
-   [CHAIN_NAME]_MAX_GAS_PRICE=
-   ```
+Do NOT commit when:
+- Tests are failing
+- Documentation is incomplete
+- Changes span multiple unrelated features
+- Commit message cannot clearly describe changes
 
-4. Security Considerations
-   - Never commit .env file
-   - Use separate .env files for different environments
-   - Rotate API keys regularly
-   - Use minimum required permissions
-   - Keep backup of configuration
+### When to Request Review
+Request review when:
+1. Feature implementation is complete
+2. All tests pass
+3. Documentation is updated
+4. Code meets quality gates
+5. Changes follow functional principles
 
-5. Validation Steps
-   After updating .env:
-   ```bash
-   # Verify environment loading
-   pnpm test:env
-   
-   # Check chain connections
-   pnpm test:chains
-   
-   # Verify contract access
-   pnpm test:contracts
-   ```
+Skip review for:
+- Minor documentation fixes
+- Test-only changes
+- Development-time configuration updates
 
-6. Environment Sync
-   When working across environments:
-   - Keep .env.example updated
-   - Document required variables
-   - Note default values
-   - Include validation rules
-   - Update deployment guides
+### When to Progress Steps
+Check current step file (e.g. `step1.txt` through `step16.txt`) for:
+1. Current step requirements and goals
+2. Dependencies on other steps
+3. Required approvals or signoffs
 
-7. Troubleshooting
-   If environment issues occur:
-   - Check variable names match .env.example
-   - Verify RPC endpoints are accessible
-   - Confirm API keys are valid
-   - Check contract addresses exist
-   - Verify environment is loaded
+Progress to next step when:
+1. Current step implementation meets checklist requirements
+2. All tests pass
+3. Documentation is complete
+4. Required reviews are approved
+5. No blocking issues remain
 
-## Notes & Best Practices
+Block step progression if:
+1. Previous step has failing tests
+2. Required documentation is missing
+3. Dependencies are not met
+4. Security issues are unresolved
 
-1. Documentation First:
-   - Always review documentation before implementation
-   - Document design decisions and rationales
-   - Keep documentation up-to-date with changes
+### Reference Files
+Essential files to check:
+- `stepN.txt`: Current step definition and requirements (N = 1-16)
+- `implementation-checklist.md`: Required implementation criteria
+- `commit-reviewer.txt`: Code quality and review requirements
+- `git-commit.txt`: Commit message standards
+- `goals.txt`: Overall project goals and milestones
 
-2. Development Practices:
-   - Follow functional programming principles
-   - Write tests before implementation
-   - Maintain consistent code style
-   - Regular code reviews
-   - Follow git commit message guidelines
+Always validate against:
+1. Implementation checklist requirements
+2. Integration points from current step
+3. Security considerations
+4. Performance requirements
+5. Testing criteria
 
-3. Security Considerations:
-   - Regular security audits
-   - Dependency vulnerability checks
-   - Secure configuration management
-   - Access control review
-
-4. Version Control:
-   - Use conventional commits
-   - Reference issues in commits
-   - Keep commits focused and atomic
-   - Write clear commit messages
+Happy Cross-Chain Building! Remember: if the docs aren't updated, the code isn't done.
