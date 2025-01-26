@@ -8,13 +8,19 @@ export type ConfigProvider = () => Readonly<Record<string, unknown>>;
 /**
  * Provider for message data
  */
-export type MessageProvider = (
-  filter?: Readonly<MessageFilter>
-) => Promise<Readonly<{
-  messages: ReadonlyArray<HyperlaneMessage>;
-  count: number;
-  filter?: MessageFilter;
-}>>;
+export type MessageProvider = {
+  readonly listMessages: (
+    filter?: Readonly<MessageFilter>
+  ) => Promise<Readonly<{
+    messages: ReadonlyArray<HyperlaneMessage>;
+    count: number;
+    filter?: MessageFilter;
+  }>>;
+  readonly getMessage: (messageId: string) => Promise<Readonly<{
+    message: HyperlaneMessage;
+    status: "pending" | "delivered" | "failed";
+  }>>;
+};
 
 /**
  * Provider for domain data

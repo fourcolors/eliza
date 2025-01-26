@@ -47,3 +47,12 @@ export type ProviderConfig = Readonly<{
     retryDelayMs: number;
   }>;
 }>;
+
+/**
+ * Hyperlane configuration
+ */
+export type HyperlaneConfig = Readonly<{
+  getMailbox: (chain: string) => any;
+  getIsm: (chain: string) => any;
+  getStorage: () => any;
+}>;

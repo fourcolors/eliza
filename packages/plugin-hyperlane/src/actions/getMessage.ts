@@ -13,13 +13,10 @@ export interface GetMessageActionOutput {
   readonly status: "pending" | "delivered" | "failed"
 }
 
-export const createGetMessageAction = (): Action<
-  GetMessageActionInput,
-  GetMessageActionOutput
-> => {
+export const createGetMessageAction = (): Action => {
   return {
     name: "getMessage",
-    execute: async ({ messageId, config }) => {
+    execute: async ({ messageId, config }: GetMessageActionInput): Promise<GetMessageActionOutput> => {
       const messageProvider = createMessageProvider(config)
       
       const { message, status } = await messageProvider.getMessage(messageId)
