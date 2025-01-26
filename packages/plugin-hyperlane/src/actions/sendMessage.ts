@@ -1,12 +1,11 @@
 import { type Action } from "@elizaos/core"
-import { type HyperlaneConfig } from "../types/config"
+import { type HyperlaneService } from "../types/hyperlane"
 import { type HyperlaneMessage } from "../types/message"
-import { createMessageProvider } from "../providers/createMessageProvider"
 
 export interface SendMessageActionInput {
   readonly message: HyperlaneMessage
   readonly destinationChain: string
-  readonly config: HyperlaneConfig
+  readonly service: HyperlaneService
 }
 
 export interface SendMessageActionOutput {
@@ -14,24 +13,18 @@ export interface SendMessageActionOutput {
   readonly txHash: string
 }
 
-export const createSendMessageAction = (): Action<
-  SendMessageActionInput,
-  SendMessageActionOutput
-> => {
-  return {
-    name: "sendMessage",
-    execute: async ({ message, destinationChain, config }) => {
-      const messageProvider = createMessageProvider(config)
-      
-      const { messageId, txHash } = await messageProvider.sendMessage({
-        message,
-        destinationChain,
-      })
+export const createSendMessageAction = (): Action => ({
+  name: "sendMessage",
+  handler: async ({ message, destinationChain, service }: SendMessageActionInput): Promise<SendMessageActionOutput> => {
+    const result = await service.dispatch({
+      destination: parseInt(destinationChain),
+      recipient: message.recipient,
+      body: message.body,
+    })
 
-      return {
-        messageId,
-        txHash,
-      }
-    },
-  }
-}
+    return {
+      messageId: result.id,
+      txHash: result.txHash,
+    }
+  },
+})

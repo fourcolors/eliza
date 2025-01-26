@@ -1,11 +1,10 @@
 import { type Action } from "@elizaos/core"
-import { type HyperlaneConfig } from "../types/config"
+import { type StorageService } from "../types/hyperlane"
 import { type HyperlaneMessage } from "../types/message"
-import { createMessageProvider } from "../providers/createMessageProvider"
 
 export interface GetMessageActionInput {
   readonly messageId: string
-  readonly config: HyperlaneConfig
+  readonly storage: StorageService
 }
 
 export interface GetMessageActionOutput {
@@ -13,18 +12,19 @@ export interface GetMessageActionOutput {
   readonly status: "pending" | "delivered" | "failed"
 }
 
-export const createGetMessageAction = (): Action => {
-  return {
-    name: "getMessage",
-    execute: async ({ messageId, config }: GetMessageActionInput): Promise<GetMessageActionOutput> => {
-      const messageProvider = createMessageProvider(config)
-      
-      const { message, status } = await messageProvider.getMessage(messageId)
+export const createGetMessageAction = (): Action => ({
+  name: "getMessage",
+  handler: async ({ messageId, storage }: GetMessageActionInput): Promise<GetMessageActionOutput> => {
+    const message = await storage.getMessage(messageId)
+    if (!message) {
+      throw new Error(`Message ${messageId} not found`)
+    }
 
-      return {
-        message,
-        status,
-      }
-    },
-  }
-}
+    const status = await storage.getMessageStatus(messageId)
+
+    return {
+      message,
+      status,
+    }
+  },
+})
