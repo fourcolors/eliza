@@ -278,6 +278,90 @@ After each task and before moving to the next:
    - Update relevant documentation
    - Create regression tests if needed
 
+## Core Functionality Verification
+After each task and before proceeding:
+
+1. Build Check
+   ```bash
+   # Build the entire project
+   pnpm build
+   
+   # Build plugin specifically
+   cd packages/plugin-hyperlane && pnpm build
+   ```
+
+2. Character Creation Verification
+   ```bash
+   # Start ElizaOS
+   cd ../.. && pnpm start
+   
+   # In another terminal, test character creation:
+   curl -X POST http://localhost:3000/api/characters \
+     -H "Content-Type: application/json" \
+     -d '{"name": "TestCharacter", "plugins": ["hyperlane"]}'
+   
+   # Verify character can use Hyperlane features:
+   curl -X POST http://localhost:3000/api/characters/TestCharacter/actions \
+     -H "Content-Type: application/json" \
+     -d '{"action": "checkDomains"}'
+   ```
+
+3. Plugin Integration Check
+   - Verify plugin loads without errors
+   - Check plugin configuration is loaded
+   - Verify plugin services start correctly
+   - Test plugin event handling
+   - Check plugin cleanup on character deletion
+
+4. Core Feature Verification
+   Each step must maintain these core capabilities:
+   - Character creation with Hyperlane plugin
+   - Basic message sending between chains
+   - Token transfer capabilities
+   - Chain status checking
+   - Plugin configuration management
+
+5. Error Recovery Check
+   - Verify character remains functional if:
+     * Network is unavailable
+     * Chain is congested
+     * Message delivery is delayed
+     * Token bridge is paused
+   - Test graceful degradation of features
+   - Verify error messages are user-friendly
+
+6. State Management
+   - Verify character state persistence
+   - Check plugin state management
+   - Test state recovery after restart
+   - Verify no state corruption during operations
+
+7. If Issues Found:
+   a. Build Issues:
+      - Fix compilation errors
+      - Resolve dependency conflicts
+      - Update build configuration
+      - Verify all modules build
+   
+   b. Character Creation Issues:
+      - Debug plugin initialization
+      - Fix configuration loading
+      - Resolve service startup issues
+      - Update error handling
+   
+   c. Integration Issues:
+      - Fix plugin registration
+      - Update service connections
+      - Resolve event handling
+      - Fix cleanup procedures
+
+8. Verification After Fixes
+   - Rebuild entire project
+   - Create new test character
+   - Verify all core features
+   - Test error scenarios
+   - Document any workarounds
+
 ## Version Control Guidelines
 See: [Git Commit Instructions](git-commit.txt)
 
