@@ -78,6 +78,70 @@ Key Objectives:
       - Maintain a stable API layer.  
       - Encourage community contributions via a well-structured repo.
 
+## Project Resumption Workflow
+When returning to the project:
+
+1. Project Status Review
+   ```bash
+   # Update local repository
+   git fetch origin
+   git status
+   
+   # Review recent changes
+   git log -n 5
+   
+   # Check uncommitted work
+   git diff
+   ```
+
+2. Implementation Progress
+   - Review implementation-checklist.md for last completed items
+   - Check current branch state and any pending changes
+   - Review any open pull requests or issues
+
+3. Environment Setup
+   ```bash
+   # Update dependencies
+   pnpm install
+   
+   # Rebuild project
+   pnpm build
+   
+   # Run tests to verify state
+   pnpm test
+   ```
+
+4. Context Recovery
+   - Review last modified files in git history
+   - Check current step file's verification checklist
+   - Review any documented blockers or dependencies
+   - Check coordinator.txt for last recorded state
+
+5. Next Steps Determination
+   a. If there are uncommitted changes:
+      - Review the changes for completeness
+      - Complete any unfinished implementations
+      - Run tests and verify functionality
+      - Commit if ready, following git-commit.txt guidelines
+   
+   b. If last step was completed:
+      - Check implementation-checklist.md for next priority
+      - Review dependencies and blockers
+      - Begin next task according to priorities
+   
+   c. If last step was incomplete:
+      - Review step's verification checklist
+      - Complete remaining checklist items
+      - Update implementation-checklist.md
+      - Follow standard completion workflow
+
+6. Task Prioritization
+   Consider:
+   - Security-critical features first
+   - Dependencies between components
+   - Test coverage requirements
+   - Documentation needs
+
 ## Implementation Progress
 After completing each step:
 1. Update implementation-checklist.md with completed items
