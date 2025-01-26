@@ -2,237 +2,410 @@
 -------------------------
 Purpose: Guide the implementation of Hyperlane integration with rigorous documentation and verification
 
-Required Documentation:
-1. Primary Sources:
-   - ElizaOS: https://elizaos.github.io/eliza/docs/
-   - Hyperlane Core: https://docs.hyperlane.xyz/docs/
-   - Hyperlane Reference: https://docs.hyperlane.xyz/docs/reference/
-   - Hyperlane Deploy: https://docs.hyperlane.xyz/docs/deploy/
-   - Hyperlane Operate: https://docs.hyperlane.xyz/docs/operate/
+## Project Goals & Guidelines
+See: [Project Goals](goals.txt)
 
-2. Secondary Sources:
-   - TypeScript: https://www.typescriptlang.org/docs/handbook/
-   - Vitest: https://vitest.dev/guide/
-   - pnpm: https://pnpm.io/cli/
+Key Objectives:
+1. Cross-Chain Communication
+   - Enable secure message passing between networks
+   - Support message retrieval and status checking
+   - Handle message delivery confirmations
 
-Pre-Implementation Requirements:
-1. Documentation Review:
-   - Read all relevant documentation sections
-   - Note key implementation requirements
-   - Identify potential challenges
+2. Functional Design
+   - Implement pure functions for operations
+   - Maintain immutable data structures
+   - Avoid side effects in core logic
 
-2. Environment Setup:
-   - Verify development tools
-   - Check dependencies
-   - Setup test environment
+3. Error Handling & Testing
+   - Clear error messages
+   - Error recovery mechanisms
+   - Comprehensive test coverage
 
-Implementation Steps:
-1. Setup (step1.txt)
-   Required Reading:
-   - ElizaOS Setup Guide
-   - Hyperlane Quick Start
-   - pnpm Workspace Setup
-   Verification:
-   - Development environment working
-   - Dependencies installed
-   - Build process successful
+## Version Control Guidelines
+See: [Git Commit Instructions](git-commit.txt)
 
-2. Core Integration (step2.txt)
-   Required Reading:
-   - Hyperlane Core Concepts
-   - Hyperlane SDK Guide
-   - ElizaOS Plugin Architecture
-   Verification:
-   - Core types defined
-   - Basic integration working
-   - Tests passing
+Commit Types:
+- feat: New features
+- fix: Bug fixes
+- docs: Documentation changes
+- style: Code style changes
+- refactor: Code refactoring
+- perf: Performance improvements
+- test: Test updates
+- build: Build system changes
+- ci: CI configuration changes
+- chore: Maintenance tasks
 
-3. Message Processing (step3.txt)
-   Required Reading:
-   - Hyperlane Messaging Protocol
-   - Message Lifecycle
-   - Error Handling Guide
-   Verification:
-   - Message handling works
-   - Error cases covered
-   - Tests comprehensive
+Example:
+```
+feat(messaging): implement cross-chain message verification
 
-4. Chain Management (step4.txt)
-   Required Reading:
-   - Chain Configuration Guide
-   - RPC Management
-   - Transaction Handling
-   Verification:
-   - Chain connections work
-   - Transactions process
-   - Error handling robust
+- Add message verification using Hyperlane ISM
+- Implement signature validation
+- Add rollback mechanism
 
-5. Security (step5.txt)
-   Required Reading:
-   - Security Best Practices
-   - Key Management Guide
-   - Authentication Protocols
-   Verification:
-   - Security measures implemented
-   - Key handling secure
-   - Vulnerabilities addressed
+Closes #123
+```
 
-6. Gas Management (step6.txt)
-   Required Reading:
-   - Gas Estimation Guide
-   - Fee Market Guide
-   - Optimization Strategies
-   Verification:
-   - Gas estimation accurate
-   - Fee handling works
-   - Optimizations effective
+## Documentation Sources & References
+| Category | Source | Owner | Purpose |
+|----------|---------|--------|----------|
+| Primary | [ElizaOS Docs](https://elizaos.github.io/eliza/docs/) | Platform Team | Core platform understanding |
+| Primary | [Hyperlane Core](https://docs.hyperlane.xyz/docs/) | Integration Team | Protocol fundamentals |
+| Primary | [Hyperlane Reference](https://docs.hyperlane.xyz/docs/reference/) | Integration Team | API & implementation details |
+| Primary | [Hyperlane Deploy](https://docs.hyperlane.xyz/docs/deploy/) | DevOps Team | Deployment procedures |
+| Primary | [Hyperlane Operate](https://docs.hyperlane.xyz/docs/operate/) | Operations Team | Maintenance & operations |
+| Secondary | [TypeScript Docs](https://www.typescriptlang.org/docs/handbook/) | Development Team | Implementation language |
+| Secondary | [Vitest Guide](https://vitest.dev/guide/) | QA Team | Testing framework |
+| Secondary | [pnpm CLI](https://pnpm.io/cli/) | Development Team | Package management |
 
-7. Messaging (step7.txt)
-   Required Reading:
-   - Cross-Chain Protocol
-   - Message Format Spec
-   - Delivery Guarantees
-   Verification:
-   - Messages delivered
-   - Format correct
-   - Guarantees met
+## Pre-Implementation Requirements
 
-8. State Management (step8.txt)
-   Required Reading:
-   - State Sync Guide
-   - Consistency Models
-   - Update Patterns
-   Verification:
-   - State consistent
-   - Updates atomic
-   - Recovery works
+### 1. Documentation Review
+Owner: Technical Lead
+Status: [ ] Not Started [ ] In Progress [ ] Complete [ ] Verified
 
-9. Event Handling (step9.txt)
-   Required Reading:
-   - Event System Guide
-   - Subscription Models
-   - Processing Patterns
-   Verification:
-   - Events captured
-   - Processing reliable
-   - Subscriptions work
+Tasks:
+- [ ] Review all documentation sections
+- [ ] Document key implementation requirements
+- [ ] Create implementation checklist
+- [ ] Share findings with team
 
-10. Recovery (step10.txt)
-    Required Reading:
-    - Recovery Procedures
-    - Failure Modes
-    - Backup Strategies
-    Verification:
-    - Recovery works
-    - Failures handled
-    - Data preserved
+⚠️ Pitfalls:
+- Missing critical security documentation
+- Overlooking version compatibility
+- Incomplete requirement gathering
 
-11. Error Handling (step11.txt)
-    Required Reading:
-    - Error Types Guide
-    - Recovery Patterns
-    - Logging Standards
-    Verification:
-    - Errors caught
-    - Recovery works
-    - Logs useful
+### 2. Environment Setup
+Owner: DevOps Lead
+Status: [ ] Not Started [ ] In Progress [ ] Complete [ ] Verified
 
-12. Monitoring (step12.txt)
-    Required Reading:
-    - Monitoring Guide
-    - Metrics Collection
-    - Alert Configuration
-    Verification:
-    - Monitoring active
-    - Metrics collected
-    - Alerts working
+Tasks:
+- [ ] Verify development tools
+- [ ] Install and configure dependencies
+- [ ] Setup test environment
+- [ ] Validate CI/CD pipeline
 
-13. Testing (step13.txt)
-    Required Reading:
-    - Test Writing Guide
-    - Coverage Requirements
-    - Vitest Documentation
-    Verification:
-    - Tests comprehensive
-    - Coverage adequate
-    - CI/CD working
+⚠️ Pitfalls:
+- Incompatible dependency versions
+- Missing environment variables
+- Insufficient access permissions
 
-14. Documentation (step14.txt)
-    Required Reading:
-    - Documentation Standards
-    - API Documentation Guide
-    - Example Writing Guide
-    Verification:
-    - Docs complete
-    - Examples work
-    - Standards met
+## Implementation Steps
 
-15. Deployment (step15.txt)
-    Required Reading:
-    - Deployment Guide
-    - Registry Guide
-    - Infrastructure Setup
-    Verification:
-    - Deployment works
-    - Registry updated
-    - Infrastructure ready
+### 1. Setup (step1.txt)
+Owner: Development Team Lead
+Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
 
-16. Maintenance (step16.txt)
-    Required Reading:
-    - Maintenance Guide
-    - Community Support
-    - Self-Hosting Guide
-    Verification:
-    - Maintenance procedures work
-    - Community supported
-    - Self-hosting possible
+Required Reading:
+- ElizaOS Setup Guide → [Setup Documentation](https://elizaos.github.io/eliza/docs/setup)
+- Hyperlane Quick Start → [Quick Start Guide](https://docs.hyperlane.xyz/docs/quick-start)
+- pnpm Workspace Setup → [Workspace Guide](https://pnpm.io/workspaces)
 
-For Each Step:
-1. Documentation Requirements:
-   - Review all listed documentation
-   - Search for additional relevant docs
-   - Note key implementation details
+🎯 Design Rationale:
+- Using pnpm for better dependency management and workspace support
+- Implementing modular architecture for maintainability
+- Following TypeScript best practices for type safety
 
-2. Implementation Process:
+⚠️ Pitfalls:
+- Incorrect workspace configuration
+- Missing peer dependencies
+- Incompatible Node.js version
+
+Verification Checklist:
+- [ ] Development environment operational
+- [ ] All dependencies installed and verified
+- [ ] Build process successful
+- [ ] Initial tests passing
+
+### 2. Core Integration (step2.txt)
+Owner: Senior Developer
+Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
+
+Required Reading:
+- Hyperlane Core Concepts → [Core Documentation](https://docs.hyperlane.xyz/docs/core-concepts)
+- Hyperlane SDK Guide → [SDK Documentation](https://docs.hyperlane.xyz/docs/sdk)
+- ElizaOS Plugin Architecture → [Plugin Guide](https://elizaos.github.io/eliza/docs/plugins)
+
+🎯 Design Rationale:
+- Implementing functional programming patterns for predictability
+- Using TypeScript interfaces for type safety
+- Leveraging ElizaOS plugin system for extensibility
+
+⚠️ Pitfalls:
+- Tight coupling with Hyperlane internals
+- Insufficient error handling
+- Missing type definitions
+
+Verification Checklist:
+- [ ] Core types defined
+- [ ] Basic integration working
+- [ ] Tests passing
+
+### 3. Message Processing (step3.txt)
+Owner: Developer
+Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
+
+Required Reading:
+- Hyperlane Messaging Protocol → [Protocol Documentation](https://docs.hyperlane.xyz/docs/messaging-protocol)
+- Message Lifecycle → [Lifecycle Documentation](https://docs.hyperlane.xyz/docs/message-lifecycle)
+- Error Handling Guide → [Error Handling Documentation](https://docs.hyperlane.xyz/docs/error-handling)
+
+Verification Checklist:
+- [ ] Message handling works
+- [ ] Error cases covered
+- [ ] Tests comprehensive
+
+### 4. Chain Management (step4.txt)
+Owner: Senior Developer
+Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
+
+Required Reading:
+- Chain Configuration Guide → [Configuration Documentation](https://docs.hyperlane.xyz/docs/chain-configuration)
+- RPC Management → [RPC Documentation](https://docs.hyperlane.xyz/docs/rpc-management)
+- Transaction Handling → [Transaction Documentation](https://docs.hyperlane.xyz/docs/transaction-handling)
+
+Verification Checklist:
+- [ ] Chain connections work
+- [ ] Transactions process
+- [ ] Error handling robust
+
+### 5. Security (step5.txt)
+Owner: Security Team
+Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
+
+Required Reading:
+- Security Best Practices → [Security Documentation](https://docs.hyperlane.xyz/docs/security-best-practices)
+- Key Management Guide → [Key Management Documentation](https://docs.hyperlane.xyz/docs/key-management)
+- Authentication Protocols → [Authentication Documentation](https://docs.hyperlane.xyz/docs/authentication-protocols)
+
+Verification Checklist:
+- [ ] Security measures implemented
+- [ ] Key handling secure
+- [ ] Vulnerabilities addressed
+
+### 6. Gas Management (step6.txt)
+Owner: Senior Developer
+Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
+
+Required Reading:
+- Gas Estimation Guide → [Gas Estimation Documentation](https://docs.hyperlane.xyz/docs/gas-estimation)
+- Fee Market Guide → [Fee Market Documentation](https://docs.hyperlane.xyz/docs/fee-market)
+- Optimization Strategies → [Optimization Documentation](https://docs.hyperlane.xyz/docs/optimization-strategies)
+
+Verification Checklist:
+- [ ] Gas estimation accurate
+- [ ] Fee handling works
+- [ ] Optimizations effective
+
+### 7. Messaging (step7.txt)
+Owner: Developer
+Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
+
+Required Reading:
+- Cross-Chain Protocol → [Protocol Documentation](https://docs.hyperlane.xyz/docs/cross-chain-protocol)
+- Message Format Spec → [Format Documentation](https://docs.hyperlane.xyz/docs/message-format-spec)
+- Delivery Guarantees → [Guarantees Documentation](https://docs.hyperlane.xyz/docs/delivery-guarantees)
+
+Verification Checklist:
+- [ ] Messages delivered
+- [ ] Format correct
+- [ ] Guarantees met
+
+### 8. State Management (step8.txt)
+Owner: Senior Developer
+Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
+
+Required Reading:
+- State Sync Guide → [State Sync Documentation](https://docs.hyperlane.xyz/docs/state-sync)
+- Consistency Models → [Consistency Documentation](https://docs.hyperlane.xyz/docs/consistency-models)
+- Update Patterns → [Update Documentation](https://docs.hyperlane.xyz/docs/update-patterns)
+
+Verification Checklist:
+- [ ] State consistent
+- [ ] Updates atomic
+- [ ] Recovery works
+
+### 9. Event Handling (step9.txt)
+Owner: Developer
+Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
+
+Required Reading:
+- Event System Guide → [Event Documentation](https://docs.hyperlane.xyz/docs/event-system)
+- Subscription Models → [Subscription Documentation](https://docs.hyperlane.xyz/docs/subscription-models)
+- Processing Patterns → [Processing Documentation](https://docs.hyperlane.xyz/docs/processing-patterns)
+
+Verification Checklist:
+- [ ] Events captured
+- [ ] Processing reliable
+- [ ] Subscriptions work
+
+### 10. Recovery (step10.txt)
+Owner: Senior Developer
+Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
+
+Required Reading:
+- Recovery Procedures → [Recovery Documentation](https://docs.hyperlane.xyz/docs/recovery-procedures)
+- Failure Modes → [Failure Documentation](https://docs.hyperlane.xyz/docs/failure-modes)
+- Backup Strategies → [Backup Documentation](https://docs.hyperlane.xyz/docs/backup-strategies)
+
+Verification Checklist:
+- [ ] Recovery works
+- [ ] Failures handled
+- [ ] Data preserved
+
+### 11. Error Handling (step11.txt)
+Owner: QA Team
+Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
+
+Required Reading:
+- Error Types Guide → [Error Types Documentation](https://docs.hyperlane.xyz/docs/error-types)
+- Recovery Patterns → [Recovery Patterns Documentation](https://docs.hyperlane.xyz/docs/recovery-patterns)
+- Logging Standards → [Logging Documentation](https://docs.hyperlane.xyz/docs/logging-standards)
+
+Verification Checklist:
+- [ ] Errors caught
+- [ ] Recovery works
+- [ ] Logs useful
+
+### 12. Monitoring (step12.txt)
+Owner: Operations Team
+Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
+
+Required Reading:
+- Monitoring Guide → [Monitoring Documentation](https://docs.hyperlane.xyz/docs/monitoring)
+- Metrics Collection → [Metrics Documentation](https://docs.hyperlane.xyz/docs/metrics-collection)
+- Alert Configuration → [Alert Documentation](https://docs.hyperlane.xyz/docs/alert-configuration)
+
+Verification Checklist:
+- [ ] Monitoring active
+- [ ] Metrics collected
+- [ ] Alerts working
+
+### 13. Testing (step13.txt)
+Owner: QA Team
+Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
+
+Required Reading:
+- Test Writing Guide → [Test Documentation](https://docs.hyperlane.xyz/docs/test-writing)
+- Coverage Requirements → [Coverage Documentation](https://docs.hyperlane.xyz/docs/coverage-requirements)
+- Vitest Documentation → [Vitest Documentation](https://vitest.dev/guide/)
+
+Verification Checklist:
+- [ ] Tests comprehensive
+- [ ] Coverage adequate
+- [ ] CI/CD working
+
+### 14. Documentation (step14.txt)
+Owner: Documentation Team
+Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
+
+Required Reading:
+- Documentation Standards → [Standards Documentation](https://docs.hyperlane.xyz/docs/documentation-standards)
+- API Documentation Guide → [API Documentation](https://docs.hyperlane.xyz/docs/api-documentation)
+- Example Writing Guide → [Example Documentation](https://docs.hyperlane.xyz/docs/example-writing)
+
+Verification Checklist:
+- [ ] Docs complete
+- [ ] Examples work
+- [ ] Standards met
+
+### 15. Deployment (step15.txt)
+Owner: DevOps Team
+Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
+
+Required Reading:
+- Deployment Guide → [Deployment Documentation](https://docs.hyperlane.xyz/docs/deployment)
+- Registry Guide → [Registry Documentation](https://docs.hyperlane.xyz/docs/registry)
+- Infrastructure Setup → [Infrastructure Documentation](https://docs.hyperlane.xyz/docs/infrastructure-setup)
+
+Verification Checklist:
+- [ ] Deployment works
+- [ ] Registry updated
+- [ ] Infrastructure ready
+
+### 16. Maintenance (step16.txt)
+Owner: Operations Team
+Status: [ ] Planning [ ] Development [ ] Testing [ ] Review [ ] Complete
+
+Required Reading:
+- Maintenance Guide → [Maintenance Documentation](https://docs.hyperlane.xyz/docs/maintenance)
+- Community Support → [Community Documentation](https://docs.hyperlane.xyz/docs/community-support)
+- Self-Hosting Guide → [Self-Hosting Documentation](https://docs.hyperlane.xyz/docs/self-hosting)
+
+Verification Checklist:
+- [ ] Maintenance procedures work
+- [ ] Community supported
+- [ ] Self-hosting possible
+
+## Progress Tracking Matrix
+
+| Step | Planning | Development | Testing | Review | Complete |
+|------|----------|-------------|----------|---------|-----------|
+| Setup | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Core Integration | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Message Processing | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Chain Management | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Security | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Gas Management | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Messaging | [ ] | [ ] | [ ] | [ ] | [ ] |
+| State Management | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Event Handling | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Recovery | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Error Handling | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Monitoring | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Testing | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Documentation | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Deployment | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Maintenance | [ ] | [ ] | [ ] | [ ] | [ ] |
+
+## Quality Gates
+
+Each step must pass the following gates:
+1. [ ] Documentation complete and reviewed
+2. [ ] Implementation follows functional programming principles
+3. [ ] Test coverage meets minimum threshold (>85%)
+4. [ ] Security review completed
+5. [ ] Performance benchmarks met
+
+## Final Verification Checklist
+
+Technical Requirements:
+- [ ] All steps implemented and tested
+- [ ] Complete test coverage achieved
+- [ ] Security measures verified
+- [ ] Performance optimized
+- [ ] Documentation updated
+
+Operational Requirements:
+- [ ] Monitoring in place
+- [ ] Alerts configured
+- [ ] Backup procedures tested
+- [ ] Recovery procedures documented
+- [ ] Support runbook created
+
+## Notes & Best Practices
+
+1. Documentation First:
+   - Always review documentation before implementation
+   - Document design decisions and rationales
+   - Keep documentation up-to-date with changes
+
+2. Development Practices:
    - Follow functional programming principles
-   - Write tests first
-   - Implement features
-   - Verify against requirements
+   - Write tests before implementation
+   - Maintain consistent code style
+   - Regular code reviews
+   - Follow git commit message guidelines
 
-3. Verification Steps:
-   - Run all tests
-   - Check documentation
-   - Verify functionality
-   - Review security
+3. Security Considerations:
+   - Regular security audits
+   - Dependency vulnerability checks
+   - Secure configuration management
+   - Access control review
 
-4. Additional Requirements:
-   - If implementation unclear, search docs
-   - If docs insufficient, search code
-   - If still unclear, ask for clarification
-   - Never proceed without understanding
-
-Progress Tracking:
-- [✓] Documentation reviewed
-- [✓] Implementation complete
-- [✓] Tests passing
-- [✓] Security verified
-
-Final Verification:
-1. All steps implemented
-2. All tests passing
-3. Documentation complete
-4. Security measures verified
-5. Performance optimized
-
-Next Actions:
-1. Review each step's documentation requirements
-2. Verify implementation completeness
-3. Check test coverage
-4. Validate security measures
-5. Update documentation as needed
-
-Notes:
-- Always check documentation before implementing
-- Write tests before features
-- Verify security at each step
-- Document all decisions and reasons
+4. Version Control:
+   - Use conventional commits
+   - Reference issues in commits
+   - Keep commits focused and atomic
+   - Write clear commit messages
