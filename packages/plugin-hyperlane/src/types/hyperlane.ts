@@ -89,8 +89,9 @@ export interface HyperlaneService {
 /**
  * Storage service for message persistence
  */
-export interface StorageService {
+export type StorageService = Readonly<{
   readonly saveMessage: (message: Readonly<HyperlaneMessage>) => Promise<void>;
-  readonly getMessage: (id: string) => Promise<Readonly<HyperlaneMessage>>;
+  readonly getMessage: (id: string) => Promise<Readonly<HyperlaneMessage> | undefined>;
   readonly listMessages: (filter?: Readonly<MessageFilter>) => Promise<ReadonlyArray<HyperlaneMessage>>;
-}
+  readonly getMessageStatus: (id: string) => Promise<"pending" | "delivered" | "failed">;
+}>;
