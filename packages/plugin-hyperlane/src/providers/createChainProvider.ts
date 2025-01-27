@@ -1,7 +1,9 @@
-import { Provider } from 'ethers'
+import { JsonRpcProvider } from 'ethers'
 import { IMailbox, IInterchainSecurityModule } from '@hyperlane-xyz/core'
 import { HyperlaneConfig } from '../types/config'
 import { ChainProvider } from '../types/provider'
+import { createIsm } from './factories/createIsm'
+import { createMailbox } from './factories/createMailbox'
 
 /**
  * Creates a provider for chain management operations
@@ -22,7 +24,7 @@ export const createChainProvider = (
   ): Promise<boolean> => {
     try {
       // Validate RPC connection
-      const provider = new Provider(params.rpcUrl)
+      const provider = new JsonRpcProvider(params.rpcUrl)
       await provider.getNetwork()
 
       // Validate mailbox if provided
@@ -53,17 +55,34 @@ export const createChainProvider = (
       deployer: string
       ismType: 'multisig' | 'optimistic' | 'routing'
       validators?: ReadonlyArray<string>
+      optimisticPeriod?: number
+      routingIsm?: string
     }>
   ): Promise<{
     mailbox: string
     ism: string
   }> => {
-    // TODO: Implement chain deployment logic
-    // 1. Deploy mailbox contract
-    // 2. Deploy ISM contract based on type
-    // 3. Configure ISM with validators if provided
-    // 4. Link mailbox with ISM
-    throw new Error('Not implemented')
+    const provider = new JsonRpcProvider(params.rpcUrl)
+
+    // Deploy ISM first
+    const ism = await createIsm(provider, params.ismType, {
+      deployer: params.deployer,
+      validators: params.validators,
+      optimisticPeriod: params.optimisticPeriod,
+      routingIsm: params.routingIsm
+    })
+
+    // Deploy mailbox with ISM
+    const mailbox = await createMailbox(provider, {
+      deployer: params.deployer,
+      domain,
+      defaultIsm: await ism.getAddress()
+    })
+
+    return {
+      mailbox: await mailbox.getAddress(),
+      ism: await ism.getAddress()
+    }
   }
 
   /**
@@ -106,10 +125,22 @@ export const createChainProvider = (
       }
     }>
   ): Promise<void> => {
-    // TODO: Implement config update logic
-    // 1. Update validator set in ISM if provided
-    // 2. Update gas config if provided
-    throw new Error('Not implemented')
+    const mailbox = config.mailboxes.get(domain)
+    const ism = config.isms.get(domain)
+
+    if (!mailbox || !ism) {
+      throw new Error(`Chain ${domain} not deployed`)
+    }
+
+    // TODO: Update validator set in ISM if provided
+    if (params.validators) {
+      throw new Error('Not implemented')
+    }
+
+    // TODO: Update gas config if provided
+    if (params.gasConfig) {
+      throw new Error('Not implemented')
+    }
   }
 
   return Object.freeze({

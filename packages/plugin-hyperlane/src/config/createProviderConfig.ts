@@ -1,53 +1,58 @@
-import { ethers } from 'ethers';
+import { JsonRpcProvider, Provider } from 'ethers';
 import { PluginConfig, ProviderConfig } from '../types/config';
 
 /**
- * Creates a provider configuration from the plugin configuration
- * @param config Plugin configuration
- * @returns Immutable provider configuration
+ * Creates provider configuration from plugin config
  */
-export const createProviderConfig = (
-  config: Readonly<PluginConfig>
-): Readonly<ProviderConfig> => Object.freeze({
-  multiProvider: createMultiProvider(config),
-  storage: createStorageConfig(config),
-  security: createSecurityConfig(config)
-} as const);
+export const createProviderConfig = (config: PluginConfig): ProviderConfig => {
+  // Create RPC configuration with sensible defaults
+  const rpc = Object.freeze({
+    retries: 3,
+    timeout: 30000, // 30 seconds
+    batchSize: 100
+  });
 
-/**
- * Creates the multi-provider configuration
- */
-const createMultiProvider = (config: Readonly<PluginConfig>) => {
-  const providers = new Map(
-    Array.from(config.domains).map(domain => [
-      domain,
-      new ethers.JsonRpcProvider(config.providers.get(domain.toString()))
-    ])
-  );
+  // Create storage configuration with sensible defaults
+  const storage = Object.freeze({
+    type: 'persistent' as const,
+    path: './storage',
+    maxSize: 10 * 1024 * 1024 // 10MB
+  });
 
+  // Create monitoring configuration with sensible defaults
+  const monitoring = Object.freeze({
+    enabled: true,
+    interval: 5000, // 5 seconds
+    maxRetries: 3
+  });
+
+  // Create immutable provider config
   return Object.freeze({
-    providers: Object.freeze(providers),
-    defaultProvider: providers.values().next().value
+    rpc,
+    storage,
+    monitoring,
+    providers: createProviders(config.providers)
   });
 };
 
 /**
- * Creates the storage configuration
+ * Creates a JsonRpcProvider for a given URL
  */
-const createStorageConfig = (config: Readonly<PluginConfig>) => Object.freeze({
-  path: './storage',
-  maxSize: 1024 * 1024 * 10, // 10MB
-  retentionDays: 30 // Keep messages for 30 days
-});
+const createProvider = (url: string): JsonRpcProvider => {
+  return new JsonRpcProvider(url);
+};
 
 /**
- * Creates the security configuration with safe defaults
+ * Creates a map of providers from domain to provider URL mapping
  */
-const createSecurityConfig = (config: Readonly<PluginConfig>) => Object.freeze({
-  ismAddress: config.defaultIsm,
-  validators: Object.freeze(new Set<string>()),
-  defaultGasLimit: BigInt(1000000), // 1M gas units
-  maxGasPerMessage: BigInt(2000000), // 2M gas units
-  retryAttempts: 3,
-  retryDelayMs: 1000 // 1 second between retries
-});
+const createProviders = (
+  providers: ReadonlyMap<number, string>
+): ReadonlyMap<number, Provider> => {
+  const result = new Map<number, Provider>();
+
+  for (const [domain, url] of providers.entries()) {
+    result.set(domain, createProvider(url));
+  }
+
+  return Object.freeze(result);
+};

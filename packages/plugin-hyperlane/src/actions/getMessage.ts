@@ -1,8 +1,7 @@
-import { type IAgentRuntime, type Memory, type Service } from "@elizaos/core"
-import { ServiceType } from "@elizaos/core"
-import { type StorageService } from "../types/hyperlane"
-import { type HyperlaneMessage } from "../types/message"
-import { type ActionResult } from "../types/action"
+import { Action, ServiceType } from '@elizaos/core'
+import type { IAgentRuntime, Memory } from '@elizaos/core'
+import type { ActionResult } from '../types/action'
+import type { HyperlaneMessage } from '../types/message'
 
 export interface GetMessageActionInput {
   readonly messageId: string
@@ -10,14 +9,12 @@ export interface GetMessageActionInput {
 
 export interface GetMessageActionOutput {
   readonly message: HyperlaneMessage
-  readonly status: "pending" | "delivered" | "failed"
 }
 
 // Define specific error types for better error handling
 export type GetMessageError = 
-  | { type: "NOT_FOUND"; messageId: string }
-  | { type: "INVALID_FORMAT"; messageId: string }
-  | { type: "STORAGE_ERROR"; error: string }
+  | { type: "INVALID_INPUT"; details: string }
+  | { type: "MESSAGE_NOT_FOUND"; messageId: string }
 
 // Pure function to validate message ID format
 const isValidMessageId = (messageId: string): boolean => 
@@ -25,105 +22,91 @@ const isValidMessageId = (messageId: string): boolean =>
 
 // Pure function to validate input
 const validateInput = (input: unknown): input is GetMessageActionInput => {
-  return typeof input === "object" && 
-         input !== null && 
-         "messageId" in input &&
-         typeof (input as any).messageId === "string" &&
-         isValidMessageId((input as any).messageId)
+  if (typeof input !== "object" || input === null) return false
+  
+  const getMessage = input as Partial<GetMessageActionInput>
+  return typeof getMessage.messageId === "string" &&
+         isValidMessageId(getMessage.messageId)
 }
 
 // Pure function to create error result
 const createErrorResult = (error: GetMessageError): ActionResult<GetMessageActionOutput> => ({
   success: false,
-  error: error.type === "NOT_FOUND" 
-    ? `Message ${error.messageId} not found`
-    : error.type === "INVALID_FORMAT"
-    ? `Invalid message ID format: ${error.messageId}`
-    : `Storage error: ${error.error}`,
+  error: error.type === "INVALID_INPUT" 
+    ? "Invalid message ID format"
+    : `Message ${error.messageId} not found`,
   metadata: new Map(),
 })
 
 // Pure function to create success result
-const createSuccessResult = (message: HyperlaneMessage, status: GetMessageActionOutput["status"]): ActionResult<GetMessageActionOutput> => ({
+const createSuccessResult = (message: HyperlaneMessage): ActionResult<GetMessageActionOutput> => ({
   success: true,
-  data: { message, status },
+  data: {
+    message,
+  },
   metadata: new Map(),
 })
 
-export const createGetMessageAction = () => ({
-  name: "getMessage",
-  similes: ["fetchMessage", "retrieveMessage"],
-  description: "Retrieves a message and its status from the Hyperlane network",
+export const createGetMessageAction = (): Action<GetMessageActionInput, GetMessageActionOutput> => ({
+  name: 'getMessage',
+  description: 'Get a cross-chain message by ID',
   examples: [
     [
       {
-        user: "{{user1}}",
-        content: { text: "Get message 0x123", action: "getMessage", input: { messageId: "0x123" } },
+        user: '{{user1}}',
+        content: {
+          text: 'Get message 0x123',
+          action: 'getMessage',
+          input: {
+            messageId: '0x123'
+          }
+        }
       },
       {
-        user: "{{agent}}",
-        content: { 
-          text: "Retrieved message 0x123", 
-          action: "getMessage",
-          output: { 
-            message: { 
-              id: "0x123", 
-              sender: "0xabc", 
-              recipient: "0xdef", 
-              origin: 1, 
-              destination: 2, 
-              body: "0x789" 
-            }, 
-            status: "delivered" 
+        assistant: '{{assistant}}',
+        content: {
+          text: 'Message retrieved',
+          action: 'getMessage',
+          output: {
+            message: {
+              id: '0x123',
+              body: '0x456',
+              recipient: '0x789',
+              destinationChain: '1'
+            }
           }
-        },
-      },
-    ],
+        }
+      }
+    ]
   ],
-  validate: async (runtime: IAgentRuntime, message: Memory) => {
-    const storage = runtime.getService<StorageService & Service>(ServiceType.STORAGE)
-    if (!storage) return false
-    
-    return validateInput(message.content.input)
+  validate: async (runtime: IAgentRuntime, memory: Memory) => {
+    const input = memory.content?.input
+    return validateInput(input)
   },
-  handler: async (runtime: IAgentRuntime, message: Memory): Promise<ActionResult<GetMessageActionOutput>> => {
+  handler: async (runtime: IAgentRuntime, memory: Memory): Promise<ActionResult<GetMessageActionOutput>> => {
     try {
-      const input = message.content.input
-      
-      // Validate input format
+      const input = memory.content?.input as GetMessageActionInput
       if (!validateInput(input)) {
-        return createErrorResult({ 
-          type: "INVALID_FORMAT", 
-          messageId: String(input?.messageId ?? "undefined") 
+        return createErrorResult({
+          type: "INVALID_INPUT",
+          details: "Invalid message ID format"
         })
       }
 
-      const storage = runtime.getService<StorageService & Service>(ServiceType.STORAGE)
-      if (!storage) {
-        return createErrorResult({ 
-          type: "STORAGE_ERROR", 
-          error: "Storage service not available" 
+      const message = await runtime.memory.get(`message:${input.messageId}`) as HyperlaneMessage
+      if (!message) {
+        return createErrorResult({
+          type: "MESSAGE_NOT_FOUND",
+          messageId: input.messageId
         })
       }
 
-      // Get message data
-      const messageData = await storage.getMessage(input.messageId)
-      if (!messageData) {
-        return createErrorResult({ 
-          type: "NOT_FOUND", 
-          messageId: input.messageId 
-        })
-      }
-
-      // Get message status
-      const status = await storage.getMessageStatus(input.messageId)
-
-      return createSuccessResult(messageData, status)
+      return createSuccessResult(message)
     } catch (error) {
-      return createErrorResult({ 
-        type: "STORAGE_ERROR", 
-        error: error instanceof Error ? error.message : "Unknown error" 
+      return createErrorResult({
+        type: "INVALID_INPUT",
+        details: error instanceof Error ? error.message : "Unknown error"
       })
     }
-  },
+  }
 })

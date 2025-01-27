@@ -1,26 +1,15 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { createIsmProvider } from "../createIsmProvider"
-import { type HyperlaneConfig } from "../../types/config"
+import { type PluginConfig } from "../../types/config"
+import { IInterchainSecurityModule } from "@hyperlane-xyz/core"
+import { JsonRpcProvider } from "ethers"
 
 describe("createIsmProvider", () => {
-  const mockIsm = {
-    verify: vi.fn(),
-    estimateGas: {
-      verify: vi.fn(),
-    },
-  }
-
-  const mockMailbox = {
-    messages: vi.fn(),
-  }
-
-  const mockConfig: HyperlaneConfig = {
-    getIsm: vi.fn().mockReturnValue(mockIsm),
-    getMailbox: vi.fn().mockReturnValue(mockMailbox),
-  } as unknown as HyperlaneConfig
+  let mockIsm: IInterchainSecurityModule
+  let mockConfig: PluginConfig
 
   const mockMessageId = "0x123"
-  const mockOriginChain = "ethereum"
+  const mockDomain = 1
   const mockMessage = {
     sender: "0xabc",
     recipient: "0xdef",
@@ -28,131 +17,89 @@ describe("createIsmProvider", () => {
   }
 
   beforeEach(() => {
+    vi.resetAllMocks()
+
+    mockIsm = {
+      verify: vi.fn().mockResolvedValue(true),
+      moduleType: vi.fn().mockResolvedValue(1),
+    } as unknown as IInterchainSecurityModule
+
+    mockConfig = {
+      domains: new Set([mockDomain]),
+      providers: new Map([[mockDomain, new JsonRpcProvider()]]),
+      mailboxes: new Map([[mockDomain, {} as any]]),
+      isms: new Map([[mockDomain, mockIsm]]),
+      defaultIsm: mockIsm,
+      hooks: new Map(),
+      gasConfig: {
+        multiplier: 1.1,
+        maxPrice: BigInt(100000000000),
+        perDomain: new Map()
+      }
+    }
+  })
+
+  afterEach(() => {
     vi.clearAllMocks()
   })
 
-  describe("verifyMessage", () => {
-    it("should verify a valid message", async () => {
-      mockMailbox.messages.mockResolvedValue(mockMessage)
-      mockIsm.verify.mockResolvedValue(true)
-
-      const provider = createIsmProvider(mockConfig)
-      const result = await provider.verifyMessage({
-        messageId: mockMessageId,
-        originChain: mockOriginChain,
-      })
-
-      expect(mockConfig.getIsm).toHaveBeenCalledWith(mockOriginChain)
-      expect(mockConfig.getMailbox).toHaveBeenCalledWith(mockOriginChain)
-      expect(mockMailbox.messages).toHaveBeenCalledWith(mockMessageId)
-      expect(mockIsm.verify).toHaveBeenCalledWith(
-        mockOriginChain,
-        mockMessage.sender,
-        mockMessage.recipient,
-        mockMessage.body
-      )
-      expect(result).toEqual({
-        verified: true,
-        status: "verified",
-      })
-    })
-
-    it("should handle non-existent messages", async () => {
-      mockMailbox.messages.mockResolvedValue(null)
-
-      const provider = createIsmProvider(mockConfig)
-      const result = await provider.verifyMessage({
-        messageId: mockMessageId,
-        originChain: mockOriginChain,
-      })
-
-      expect(result).toEqual({
-        verified: false,
-        status: "not_found",
-      })
-    })
-
-    it("should handle invalid messages", async () => {
-      mockMailbox.messages.mockResolvedValue(mockMessage)
-      mockIsm.verify.mockResolvedValue(false)
-
-      const provider = createIsmProvider(mockConfig)
-      const result = await provider.verifyMessage({
-        messageId: mockMessageId,
-        originChain: mockOriginChain,
-      })
-
-      expect(result).toEqual({
-        verified: false,
-        status: "invalid",
-      })
-    })
-
-    it("should handle verification failures", async () => {
-      mockMailbox.messages.mockResolvedValue(mockMessage)
-      mockIsm.verify.mockRejectedValue(new Error("Verification failed"))
-
-      const provider = createIsmProvider(mockConfig)
-      const result = await provider.verifyMessage({
-        messageId: mockMessageId,
-        originChain: mockOriginChain,
-      })
-
-      expect(result).toEqual({
-        verified: false,
-        status: "verification_failed",
-      })
-    })
+  it("creates a valid ISM provider", () => {
+    const provider = createIsmProvider(mockConfig)
+    expect(provider).toBeDefined()
+    expect(typeof provider.verify).toBe("function")
   })
 
-  describe("getVerificationGas", () => {
-    it("should estimate gas for message verification", async () => {
-      const mockGasEstimate = BigInt(100000)
-      mockMailbox.messages.mockResolvedValue(mockMessage)
-      mockIsm.estimateGas.verify.mockResolvedValue(mockGasEstimate)
+  it("verifies messages correctly", async () => {
+    const provider = createIsmProvider(mockConfig)
+    const result = await provider.verify(mockMessageId, mockDomain)
+    expect(result).toBe(true)
+    expect(mockIsm.verify).toHaveBeenCalledWith(mockMessageId)
+  })
 
-      const provider = createIsmProvider(mockConfig)
-      const result = await provider.getVerificationGas({
-        messageId: mockMessageId,
-        originChain: mockOriginChain,
-      })
+  it("handles verification failures", async () => {
+    mockIsm.verify = vi.fn().mockResolvedValue(false)
+    const provider = createIsmProvider(mockConfig)
+    const result = await provider.verify(mockMessageId, mockDomain)
+    expect(result).toBe(false)
+  })
 
-      expect(mockConfig.getIsm).toHaveBeenCalledWith(mockOriginChain)
-      expect(mockConfig.getMailbox).toHaveBeenCalledWith(mockOriginChain)
-      expect(mockMailbox.messages).toHaveBeenCalledWith(mockMessageId)
-      expect(mockIsm.estimateGas.verify).toHaveBeenCalledWith(
-        mockOriginChain,
-        mockMessage.sender,
-        mockMessage.recipient,
-        mockMessage.body
-      )
-      expect(result).toBe(mockGasEstimate)
-    })
+  it("handles verification errors", async () => {
+    mockIsm.verify = vi.fn().mockRejectedValue(new Error("Verification failed"))
+    const provider = createIsmProvider(mockConfig)
+    await expect(provider.verify(mockMessageId, mockDomain)).rejects.toThrow("Verification failed")
+  })
 
-    it("should throw error for non-existent messages", async () => {
-      mockMailbox.messages.mockResolvedValue(null)
+  it("uses domain-specific ISM when available", async () => {
+    const domainIsm = {
+      verify: vi.fn().mockResolvedValue(true),
+      moduleType: vi.fn().mockResolvedValue(1),
+    } as unknown as IInterchainSecurityModule
 
-      const provider = createIsmProvider(mockConfig)
-      await expect(
-        provider.getVerificationGas({
-          messageId: mockMessageId,
-          originChain: mockOriginChain,
-        })
-      ).rejects.toThrow("Message not found")
-    })
+    mockConfig.isms.set(mockDomain, domainIsm)
+    
+    const provider = createIsmProvider(mockConfig)
+    await provider.verify(mockMessageId, mockDomain)
+    
+    expect(domainIsm.verify).toHaveBeenCalledWith(mockMessageId)
+    expect(mockIsm.verify).not.toHaveBeenCalled()
+  })
 
-    it("should handle gas estimation failures", async () => {
-      const errorMessage = "Gas estimation failed"
-      mockMailbox.messages.mockResolvedValue(mockMessage)
-      mockIsm.estimateGas.verify.mockRejectedValue(new Error(errorMessage))
+  it("falls back to default ISM when domain-specific not available", async () => {
+    mockConfig.isms.delete(mockDomain)
+    
+    const provider = createIsmProvider(mockConfig)
+    await provider.verify(mockMessageId, mockDomain)
+    
+    expect(mockIsm.verify).toHaveBeenCalledWith(mockMessageId)
+  })
 
-      const provider = createIsmProvider(mockConfig)
-      await expect(
-        provider.getVerificationGas({
-          messageId: mockMessageId,
-          originChain: mockOriginChain,
-        })
-      ).rejects.toThrow(errorMessage)
-    })
+  it("throws when no ISM available for domain", async () => {
+    mockConfig.isms.delete(mockDomain)
+    mockConfig.defaultIsm = undefined as any
+    
+    const provider = createIsmProvider(mockConfig)
+    await expect(provider.verify(mockMessageId, mockDomain)).rejects.toThrow(
+      `No ISM available for domain ${mockDomain}`
+    )
   })
 })

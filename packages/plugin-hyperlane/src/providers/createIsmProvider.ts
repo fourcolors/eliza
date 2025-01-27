@@ -1,74 +1,32 @@
-import { type HyperlaneConfig } from "../types/config"
-import { type MessageStatus } from "../types/message"
+import { PluginConfig } from '../types/config'
+import { IInterchainSecurityModule } from '@hyperlane-xyz/core'
 
 export interface IsmProvider {
-  readonly verifyMessage: (params: {
-    readonly messageId: string
-    readonly originChain: string
-  }) => Promise<{
-    readonly verified: boolean
-    readonly status: MessageStatus
-  }>
-  readonly getVerificationGas: (params: {
-    readonly messageId: string
-    readonly originChain: string
-  }) => Promise<bigint>
+  verify: (messageId: string, domain: number) => Promise<boolean>
 }
 
-export const createIsmProvider = (config: HyperlaneConfig): IsmProvider => {
-  const verifyMessage = async ({ messageId, originChain }: { messageId: string; originChain: string }): Promise<{ verified: boolean; status: MessageStatus }> => {
-    const ism = config.getIsm(originChain)
-    const mailbox = config.getMailbox(originChain)
-    
-    // Get message metadata from mailbox
-    const message = await mailbox.messages(messageId)
-    if (!message) {
-      return {
-        verified: false,
-        status: "not_found" as MessageStatus,
-      }
+/**
+ * Creates an ISM provider for verifying messages
+ */
+export const createIsmProvider = (config: PluginConfig): IsmProvider => {
+  /**
+   * Gets the ISM for a specific domain, falling back to default if not found
+   */
+  const getIsm = (domain: number): IInterchainSecurityModule => {
+    const ism = config.isms.get(domain) ?? config.defaultIsm
+    if (!ism) {
+      throw new Error(`No ISM available for domain ${domain}`)
     }
-
-    try {
-      // Verify message using ISM
-      const verified = await ism.verify(
-        originChain,
-        message.sender,
-        message.recipient,
-        message.body
-      )
-
-      return {
-        verified,
-        status: verified ? "verified" as MessageStatus : "invalid" as MessageStatus,
-      }
-    } catch (error) {
-      return {
-        verified: false,
-        status: "verification_failed" as MessageStatus,
-      }
-    }
-  }
-
-  const getVerificationGas = async ({ messageId, originChain }) => {
-    const ism = config.getIsm(originChain)
-    const mailbox = config.getMailbox(originChain)
-    
-    const message = await mailbox.messages(messageId)
-    if (!message) {
-      throw new Error("Message not found")
-    }
-
-    return await ism.estimateGas.verify(
-      originChain,
-      message.sender,
-      message.recipient,
-      message.body
-    )
+    return ism
   }
 
   return {
-    verifyMessage,
-    getVerificationGas,
+    /**
+     * Verifies a message using domain-specific or default ISM
+     */
+    verify: async (messageId: string, domain: number): Promise<boolean> => {
+      const ism = getIsm(domain)
+      return ism.verify(messageId)
+    }
   }
 }

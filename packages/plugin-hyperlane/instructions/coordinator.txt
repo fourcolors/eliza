@@ -1,345 +1,80 @@
 # Hyperlane Integration Coordinator
 
-Lightweight, powerful guide for integrating Hyperlane with ElizaOS.  
-**Rule #1**: Always consult and update documentation first—no coding without reading!
+This document coordinates the implementation of the Hyperlane plugin for ElizaOS.
+Follow these guidelines for all development work.
 
----
-
-## 1. Documentation First Approach
-
-### Required Reads
+## Required Documentation
 - [ElizaOS Core Docs](https://elizaos.github.io/eliza/docs/core)
 - [Hyperlane Protocol Docs](https://docs.hyperlane.xyz)
 - [Plugin Architecture](https://elizaos.github.io/eliza/docs/plugins)
-- [Service Integration](https://elizaos.github.io/eliza/docs/services)
 
-### Documentation Workflow
-1. **Review** existing docs (Eliza, Hyperlane, plugin repos, GitHub issues).
-2. **Update** relevant sections before coding.
-3. **Document** design decisions and rationale.
-4. **Sync** any changes with your code and keep docs updated in real time.
-5. **Avoid** obvious comments, use block comments only for non-self-explanatory code.
+## Implementation Process
 
----
+1. Always start by checking the implementation checklist in `implementation-checklist.md`
+2. For each task:
+   a. Verify requirements in the documentation
+   b. Implement the feature
+   c. Add tests
+   d. Update documentation if needed
+   e. Run `git-commit.txt` to commit changes
+   f. Have changes reviewed via `commit-reviewer.txt`
+   g. Update implementation checklist
+   h. Double check docs before moving to the next task
 
-## 2. Project Goals & Key Objectives
-See: [Project Goals](goals.txt) for complete details.
+## Development Guidelines
 
-1. **Cross-Chain Communication**
-   - Integrate Hyperlane message passing for cross-chain calls.
-   - Provide robust event/status tracking and payload integrity checks.
+### Code Quality Requirements
+1. Functional Programming
+   - Use immutable data structures
+   - Write pure functions
+   - Isolate side effects
+   - Apply design patterns
 
-2. **Warp Routes & Asset Transfer**
-   - Implement Warp Route logic for seamless cross-chain token moves.
-   - Offer a clean API for these transfers, with thorough status checks.
+2. Testing Protocol
+   - Write tests before implementation
+   - Use vitest
+   - Cover edge cases
+   - Achieve ≥85% coverage
+   - Run test that run automatically (no watching)
 
-3. **New Chain Deployment**
-   - Automate scripts for validator & ISM deployment to new chains.
-   - Provide a step-by-step setup guide (ensuring consistent security).
+3. Documentation
+   - Keep docs updated
+   - Document design decisions
+   - Use block comments only for non-obvious code
 
-4. **Functional (Pure) Design**
-   - Use immutable data structures and avoid side effects.
-   - Keep functions pure and composable.
-   - Isolate side effects to specific boundaries.
-   - Follow established design patterns.
+4. Security & Performance
+   - Validate all inputs
+   - Implement retry mechanisms
+   - Optimize gas usage
+   - Follow security best practices
 
-5. **Error Handling & Recovery**
-   - Validate inputs pre-cross-chain calls.
-   - Implement retry/rollback for failed ops.
-   - Provide structured logs for debugging.
-   - Handle edge cases thoroughly.
+## Implementation Status
+See `implementation-checklist.md` for detailed progress tracking.
 
-6. **Testing & Verification**
-   - Write unit tests before implementation.
-   - Use vitest for all testing.
-   - Cover edge cases and error paths.
-   - Achieve high test coverage (≥85%).
-   - Include integration tests for cross-chain flows.
+## Git Workflow
+1. Before starting work:
+   - Check implementation-checklist.md for next task
 
-7. **Documentation & Configuration Guide**
-   - Maintain dev-friendly docs on usage, `.env` setup, common pitfalls.
-   - Keep code, docs, and examples aligned.
-   - Document design decisions and rationale.
+2. During development:
+   - Make atomic commits
+   - Follow commit message guidelines
+   - Update implementation checklist
 
-8. **Performance Optimization**
-   - Reduce on-chain overhead, optimize cross-chain throughput.
-   - Audit gas usage for bridging and warp route calls.
-   - Use efficient data structures and algorithms.
+3. Before committing:
+   - Run all tests without without "watch mode"
+   - Update documentation
+   - Follow git-commit.txt instructions
+   - Get review via commit-reviewer.txt
 
-9. **Security Enhancements**
-   - Integrate Hyperlane security modules.
-   - Validate messages to prevent replay attacks.
-   - Provide best practices for private key handling.
+4. After completing a task:
+   - Update implementation-checklist.md
+   - Get final review
 
-10. **Maintainability & Future-Proofing**
-    - Use modular, functional programming approach.
-    - Keep modules pure and side-effect free.
-    - Maintain stable APIs.
-    - Follow framework conventions.
+## Important Files
+- implementation-checklist.md: Source of truth for implementation progress
+- git-commit.txt: Instructions for making commits
+- commit-reviewer.txt: Guidelines for code review
 
----
 
-## 3. Implementation Guidelines
-See: [Commit Reviewer Guidelines](commit-reviewer.txt) for detailed code quality and security requirements.
-
-### Development Flow
-1. **Pre-Implementation**
-   - Read ALL relevant documentation first.
-   - Write test cases before implementation.
-   - Plan functional approach.
-   - Review commit-reviewer.txt checklist.
-
-2. **Implementation**
-   - Follow functional programming principles:
-     * Use immutable data structures
-     * Avoid side effects
-     * Write pure functions
-     * Apply design patterns
-   - Adhere to commit-reviewer.txt for:
-     * Code quality standards
-     * Security requirements
-     * Performance guidelines
-     * Testing requirements
-
-3. **Post-Implementation**
-   - Run full test suite with vitest.
-   - Run pnpm build.
-   - Update documentation.
-   - Submit for review using commit-reviewer.txt checklist.
-   - Follow git-commit.txt guidelines for commit messages.
-
-### Version Control Guidelines
-See: [Git Commit Instructions](git-commit.txt)
-
-Commit Types:
-- feat: New features
-- fix: Bug fixes
-- docs: Documentation changes
-- style: Code style changes
-- refactor: Code refactoring
-- perf: Performance improvements
-- test: Test updates
-- build: Build system changes
-- ci: CI configuration changes
-- chore: Maintenance tasks
-
-Example:
-```
-feat(messaging): implement cross-chain message verification
-
-- Add message verification using Hyperlane ISM
-- Implement signature validation
-- Add rollback mechanism
-
-Closes #123
-```
-
-### Problem Resolution
-- **Security Issues**: Fix immediately, update dependencies if needed.
-- **Code Quality Issues**: Address per commit-reviewer.txt; ensure tests are updated.
-- **Package Updates**: Always ask before updating versions, verify compatibility.
-- **Edge Cases**: Double check all edge cases in implementation.
-
----
-
-## 4. Implementation Steps
-
-| Step                           | Owner             | Status                                       |
-|--------------------------------|-------------------|----------------------------------------------|
-| **1. Message Processing**      | Developer         | ✅ Planning \| ✅ Dev \| ✅ Test \| ✅ Review \| ✅ Complete |
-| **2. Chain Management**        | Senior Dev        | ✅ Planning \| ☐ Dev \| ☐ Test \| ☐ Review \| ☐ Complete    |
-| **3. Security Implementation** | Security Team     | ☐ Planning \| ☐ Dev \| ☐ Test \| ☐ Review \| ☐ Complete    |
-| **4. Gas Management**          | Senior Dev        | ☐ Planning \| ☐ Dev \| ☐ Test \| ☐ Review \| ☐ Complete    |
-| **5. State Management**        | Senior Dev        | ☐ Planning \| ☐ Dev \| ☐ Test \| ☐ Review \| ☐ Complete    |
-| **6. Testing & Deployment**    | DevOps Team       | ☐ Planning \| ☐ Dev \| ☐ Test \| ☐ Review \| ☐ Complete    |
-
-**Documentation Links**  
-- Hyperlane Messaging Protocol  
-- Message Lifecycle  
-- Chain Configuration  
-- Security Best Practices  
-- Gas Estimation & Fee Market  
-- State Sync & Consistency  
-- Deployment & Monitoring  
-
----
-
-## 5. Documentation Sources & References
-| Category | Source | Owner | Purpose |
-|----------|---------|--------|----------|
-| Primary | [ElizaOS Docs](https://elizaos.github.io/eliza/docs/) | Platform Team | Core platform understanding |
-| Primary | [Hyperlane Core](https://docs.hyperlane.xyz/docs/) | Integration Team | Protocol fundamentals |
-| Primary | [Hyperlane Reference](https://docs.hyperlane.xyz/docs/reference/) | Integration Team | API & implementation details |
-| Primary | [Hyperlane Deploy](https://docs.hyperlane.xyz/docs/deploy/) | DevOps Team | Deployment procedures |
-| Primary | [Hyperlane Operate](https://docs.hyperlane.xyz/docs/operate/) | Operations Team | Maintenance & operations |
-| Secondary | [TypeScript Docs](https://www.typescriptlang.org/docs/handbook/) | Development Team | Implementation language |
-| Secondary | [Vitest Guide](https://vitest.dev/guide/) | QA Team | Testing framework |
-| Secondary | [pnpm CLI](https://pnpm.io/cli/) | Development Team | Package management |
-
----
-
-## 6. Environment Configuration Management
-
-### Initial Setup
-```bash
-# Copy example env file
-cp .env.example .env
-```
-
-### Configuration Categories
-1. **Chain Configuration**
-   - RPC endpoints
-   - Contract addresses
-   - Network-specific settings
-
-2. **API Keys**
-   - Provider keys
-   - Explorer API keys
-
-3. **Gas Settings**
-   - Multipliers
-   - Price limits
-   - Chain-specific overrides
-
-4. **Security**
-   - ISM configurations
-   - Validator settings
-   - Key management
-
-### Update Triggers
-- Adding new chains or modifying existing ones
-- Changing RPC providers or contract addresses
-- Adjusting gas settings or security keys
-
-### Validation Steps
-After updating .env:
-```bash
-# Verify environment loading
-pnpm test:env
-
-# Check chain connections
-pnpm test:chains
-
-# Verify contract access
-pnpm test:contracts
-```
-
-### Troubleshooting
-If environment issues occur:
-- Check variable names match .env.example
-- Verify RPC endpoints are accessible
-- Confirm API keys are valid
-- Check contract addresses exist
-- Verify environment is loaded
-
----
-
-## 7. Quality Gates
-All changes must pass the following gates as defined in commit-reviewer.txt:
-
-1. **Documentation** complete & reviewed
-2. **Functional Programming**:
-   - Pure functions
-   - Immutable data structures
-   - No side effects
-   - Clear design patterns
-3. **Testing**:
-   - Unit tests with vitest
-   - Integration tests
-   - ≥85% coverage
-4. **Security** review completed
-5. **Performance** benchmarks met
-6. **Code Quality**:
-   - Follow framework conventions
-   - No obvious comments
-   - Block comments only for complex logic
-7. **Version Control**:
-   - Follow git-commit.txt
-   - Clear commit messages
-   - Reference issues
-
----
-
-## 8. Final Verification Checklist
-
-### Technical
-- [ ] All steps tested & verified
-- [ ] Security measures in place
-- [ ] Performance optimized
-- [ ] Documentation updated
-- [ ] Commit messages follow git-commit.txt
-- [ ] All tests passing with vitest
-- [ ] Build successful with pnpm
-
-### Operational
-- [ ] Monitoring + alerts configured
-- [ ] Backups tested
-- [ ] Recovery playbooks documented
-- [ ] Support runbook in place
-
----
-
-## 9. Step Progression & Decision Making
-
-### When to Commit
-Commit when you have:
-1. Completed a logical unit of work
-2. Added new functionality with tests
-3. Fixed a bug with regression tests
-4. Updated documentation that stands alone
-5. Made significant refactoring changes
-
-Do NOT commit when:
-- Tests are failing
-- Documentation is incomplete
-- Changes span multiple unrelated features
-- Commit message cannot clearly describe changes
-
-### When to Request Review
-Request review when:
-1. Feature implementation is complete
-2. All tests pass
-3. Documentation is updated
-4. Code meets quality gates
-5. Changes follow functional principles
-
-Skip review for:
-- Minor documentation fixes
-- Test-only changes
-- Development-time configuration updates
-
-### When to Progress Steps
-Check current step file (e.g. `step1.txt` through `step16.txt`) for:
-1. Current step requirements and goals
-2. Dependencies on other steps
-3. Required approvals or signoffs
-
-Progress to next step when:
-1. Current step implementation meets checklist requirements
-2. All tests pass
-3. Documentation is complete
-4. Required reviews are approved
-5. No blocking issues remain
-
-Block step progression if:
-1. Previous step has failing tests
-2. Required documentation is missing
-3. Dependencies are not met
-4. Security issues are unresolved
-
-### Reference Files
-Essential files to check:
-- `stepN.txt`: Current step definition and requirements (N = 1-16)
-- `implementation-checklist.md`: Required implementation criteria
-- `commit-reviewer.txt`: Code quality and review requirements
-- `git-commit.txt`: Commit message standards
-- `goals.txt`: Overall project goals and milestones
-
-Always validate against:
-1. Implementation checklist requirements
-2. Integration points from current step
-3. Security considerations
-4. Performance requirements
-5. Testing criteria
-
-Happy Cross-Chain Building! Remember: if the docs aren't updated, the code isn't done.
+#Other
+ - When running tests, run the test in a way where it don't require a user to press any key so you can fix it without their interaction.

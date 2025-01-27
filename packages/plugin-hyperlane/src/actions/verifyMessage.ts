@@ -6,19 +6,16 @@ import { type MessageStatus } from "../types/message"
 
 export interface VerifyMessageActionInput {
   readonly messageId: string
-  readonly originChain: string
 }
 
 export interface VerifyMessageActionOutput {
   readonly verified: boolean
   readonly status: MessageStatus
-  readonly gasEstimate: string
 }
 
 // Define specific error types for better error handling
 export type VerifyMessageError = 
   | { type: "INVALID_INPUT"; details: string }
-  | { type: "INVALID_CHAIN"; chain: string }
   | { type: "SERVICE_UNAVAILABLE"; service: string }
   | { type: "VERIFICATION_ERROR"; error: string }
 
@@ -26,45 +23,33 @@ export type VerifyMessageError =
 const isValidMessageId = (messageId: string): boolean => 
   /^0x[a-fA-F0-9]+$/.test(messageId)
 
-// Pure function to validate chain ID format
-const isValidChainId = (chainId: string): boolean => 
-  /^\d+$/.test(chainId) && parseInt(chainId) > 0
-
 // Pure function to validate input
 const validateInput = (input: unknown): input is VerifyMessageActionInput => {
   if (typeof input !== "object" || input === null) return false
   
   const verifyInput = input as Partial<VerifyMessageActionInput>
   return typeof verifyInput.messageId === "string" &&
-         typeof verifyInput.originChain === "string" &&
-         isValidMessageId(verifyInput.messageId) &&
-         isValidChainId(verifyInput.originChain)
+         isValidMessageId(verifyInput.messageId)
 }
 
 // Pure function to create error result
 const createErrorResult = (error: VerifyMessageError): ActionResult<VerifyMessageActionOutput> => ({
   success: false,
-  error: error.type === "INVALID_INPUT" 
-    ? `Invalid input: ${error.details}`
-    : error.type === "INVALID_CHAIN"
-    ? `Invalid chain ID: ${error.chain}`
-    : error.type === "SERVICE_UNAVAILABLE"
-    ? `Service unavailable: ${error.service}`
-    : `Verification error: ${error.error}`,
+  error: error.type === "INVALID_INPUT" ? error.details :
+         error.type === "SERVICE_UNAVAILABLE" ? `${error.service} service not found` :
+         error.error,
   metadata: new Map(),
 })
 
 // Pure function to create success result
 const createSuccessResult = (
   verified: boolean, 
-  status: MessageStatus, 
-  gasEstimate: bigint
+  status: MessageStatus
 ): ActionResult<VerifyMessageActionOutput> => ({
   success: true,
   data: {
     verified,
     status,
-    gasEstimate: gasEstimate.toString(),
   },
   metadata: new Map(),
 })
@@ -78,73 +63,69 @@ export const createVerifyMessageAction = () => ({
       {
         user: "{{user1}}",
         content: { 
-          text: "Verify message 0x123 from chain 1", 
+          text: "Verify message 0x123", 
           action: "verifyMessage", 
           input: { 
             messageId: "0x123",
-            originChain: "1"
           }
         },
       },
       {
-        user: "{{agent}}",
+        user: "{{assistant}}",
         content: { 
           text: "Message verification complete", 
           action: "verifyMessage",
           output: { 
             verified: true,
             status: "verified",
-            gasEstimate: "50000"
           }
         },
       },
     ],
   ],
-  validate: async (runtime: IAgentRuntime, message: Memory) => {
-    const ism = runtime.getService<IsmProvider & Service>(ServiceType.HYPERLANE)
+  validate: async (runtime: IAgentRuntime, memory: Memory) => {
+    const ism = runtime.services?.get(ServiceType.ISM)
     if (!ism) return false
     
-    return validateInput(message.content.input)
+    const input = memory.content?.input as Partial<VerifyMessageActionInput>
+    return validateInput(input)
   },
-  handler: async (runtime: IAgentRuntime, message: Memory): Promise<ActionResult<VerifyMessageActionOutput>> => {
+  handler: async (runtime: IAgentRuntime, memory: Memory): Promise<ActionResult<VerifyMessageActionOutput>> => {
     try {
-      const input = message.content.input
-      
-      // Validate input format
-      if (!validateInput(input)) {
-        return createErrorResult({ 
-          type: "INVALID_INPUT", 
-          details: "Invalid message ID or chain ID format" 
-        })
-      }
-
-      // Get ISM service
-      const ism = runtime.getService<IsmProvider & Service>(ServiceType.HYPERLANE)
+      const ism = runtime.services?.get(ServiceType.ISM)
       if (!ism) {
         return createErrorResult({ 
           type: "SERVICE_UNAVAILABLE", 
-          service: "HYPERLANE" 
+          service: "ISM" 
         })
       }
 
-      // Verify message
-      const { verified, status } = await ism.verifyMessage({
-        messageId: input.messageId,
-        originChain: input.originChain,
-      })
+      const input = memory.content?.input as VerifyMessageActionInput
+      if (!validateInput(input)) {
+        return createErrorResult({
+          type: "INVALID_INPUT",
+          details: "Invalid message ID format"
+        })
+      }
 
-      // Get gas estimate for verification
-      const gasEstimate = await ism.getVerificationGas({
-        messageId: input.messageId,
-        originChain: input.originChain,
-      })
+      const message = await runtime.memory.get(`message:${input.messageId}`)
+      if (!message) {
+        return createErrorResult({
+          type: "VERIFICATION_ERROR",
+          error: `Message ${input.messageId} not found`
+        })
+      }
 
-      return createSuccessResult(verified, status, gasEstimate)
+      const result = await ism.verifyMessage({ messageId: input.messageId })
+      const status = result.verified ? 'delivered' : 'failed'
+      await runtime.memory.set(`message:${input.messageId}:status`, status)
+
+      return createSuccessResult(result.verified, result.status)
     } catch (error) {
-      return createErrorResult({ 
-        type: "VERIFICATION_ERROR", 
-        error: error instanceof Error ? error.message : "Unknown error" 
+      return createErrorResult({
+        type: "VERIFICATION_ERROR",
+        error: error instanceof Error ? error.message : "Unknown error"
       })
     }
-  },
+  }
 })
