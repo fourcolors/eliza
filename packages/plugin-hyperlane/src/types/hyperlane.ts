@@ -1,97 +1,177 @@
-import { Provider } from 'ethers';
-import { IMailbox, IInterchainSecurityModule, IPostDispatchHook } from '@hyperlane-xyz/core';
+import { IService } from "@elizaos/core";
+import { Provider } from "ethers";
+import { IInterchainSecurityModule, IMailbox, IPostDispatchHook } from "@hyperlane-xyz/core";
+
+/**
+ * Configuration for a chain
+ */
+export interface ChainConfig {
+    chainId: number;
+    rpcUrl: string;
+    mailbox: string;
+    igp: string;
+    name: string;
+}
+
+/**
+ * Configuration for a token
+ */
+export interface TokenConfig {
+    address: string;
+    name: string;
+    symbol: string;
+    decimals: number;
+}
+
+/**
+ * Configuration for a warp route
+ */
+export interface WarpConfig {
+    originChain: number;
+    destinationChain: number;
+    token: TokenConfig;
+}
 
 /**
  * Core message type for cross-chain communication
  */
-export type HyperlaneMessage = Readonly<{
-  id: string;
-  sender: string;
-  recipient: string;
-  origin: number;
-  destination: number;
-  body: string;
-  metadata?: ReadonlyMap<string, unknown>;
-}>;
-
-/**
- * Filter for querying messages
- */
-export type MessageFilter = Readonly<{
-  origin?: number;
-  destination?: number;
-  status?: 'pending' | 'delivered' | 'failed';
-}>;
+export interface HyperlaneMessage {
+    id: string;
+    sender: string;
+    recipient: string;
+    body: string;
+    origin: number;
+    destination: number;
+}
 
 /**
  * Parameters for message dispatch
  */
-export type DispatchParams = Readonly<{
-  destination: number;
-  recipient: string;
-  body: string;
-  hookMetadata?: string;
-  customHook?: IPostDispatchHook;
-}>;
+export interface DispatchParams {
+    destination: number;
+    recipient: string;
+    body: string;
+}
 
 /**
  * Result of message dispatch
  */
-export type DispatchResult = Readonly<{
-  id: string;
-  message: HyperlaneMessage;
-  txHash: string;
-  fee: bigint;
-}>;
+export interface DispatchResult {
+    id: string;
+    txHash: string;
+    message: string;
+}
 
 /**
  * Parameters for message processing
  */
-export type ProcessParams = Readonly<{
-  metadata: string;
-  message: string;
-}>;
+export interface ProcessParams {
+    origin: number;
+    sender: string;
+    message: HyperlaneMessage;
+}
 
 /**
  * Result of message processing
  */
-export type ProcessResult = Readonly<{
-  success: boolean;
-  messageId: string;
-  origin: number;
-  sender: string;
-  recipient: string;
-  error?: string;
-}>;
+export interface ProcessResult {
+    success: boolean;
+    error?: string;
+}
+
+/**
+ * Filter for querying messages
+ */
+export interface MessageFilter {
+    origin?: number;
+    destination?: number;
+    sender?: string;
+    recipient?: string;
+}
+
+/**
+ * Parameters for sending warp tokens
+ */
+export interface WarpSendParams {
+    originChain: number;
+    destinationChain: number;
+    amount: bigint;
+    recipient?: string;
+    token: TokenConfig;
+}
+
+/**
+ * Result of sending warp tokens
+ */
+export interface WarpSendResult {
+    txHash: string;
+    messageId: string;
+}
 
 /**
  * Core service interface for Hyperlane integration
  */
-export interface HyperlaneService {
-  // Core Mailbox interactions
-  readonly getMailbox: (domain: number) => Promise<IMailbox>;
-  readonly dispatch: (params: Readonly<DispatchParams>) => Promise<Readonly<DispatchResult>>;
-  readonly process: (params: Readonly<ProcessParams>) => Promise<Readonly<ProcessResult>>;
-  
-  // Provider management
-  readonly getProvider: (domain: number) => Provider;
-  readonly getDomains: () => ReadonlyArray<number>;
-  
-  // Security
-  readonly getDefaultIsm: () => Promise<IInterchainSecurityModule>;
-  readonly getRecipientIsm: (recipient: string) => Promise<IInterchainSecurityModule>;
-  readonly isDelivered: (messageId: string) => Promise<boolean>;
-  
-  // Fee estimation
-  readonly quoteDispatch: (params: Readonly<DispatchParams>) => Promise<bigint>;
-}
+export interface HyperlaneService extends IService {
+    /**
+     * Initialize the service
+     */
+    initialize(runtime: any): Promise<void>;
+    
+    /**
+     * Get the mailbox for a domain
+     */
+    getMailbox(domain: number): Promise<IMailbox>;
+    
+    /**
+     * Configure a warp route
+     */
+    configureWarpRoute(config: WarpConfig): Promise<string>;
+    
+    /**
+     * Dispatch a message
+     */
+    dispatch(params: Readonly<DispatchParams>): Promise<Readonly<DispatchResult>>;
+    
+    /**
+     * Process a message
+     */
+    process(params: Readonly<ProcessParams>): Promise<Readonly<ProcessResult>>;
+    
+    /**
+     * Get the provider for a domain
+     */
+    getProvider(domain: number): Provider;
+    
+    /**
+     * Get the list of supported domains
+     */
+    getDomains(): ReadonlyArray<number>;
+    
+    /**
+     * Get the default interchain security module
+     */
+    getDefaultIsm(): Promise<IInterchainSecurityModule>;
+    
+    /**
+     * Get the interchain security module for a recipient
+     */
+    getRecipientIsm(recipient: string): Promise<IInterchainSecurityModule>;
+    
+    /**
+     * Check if a message has been delivered
+     */
+    isDelivered(messageId: string): Promise<boolean>;
+    
+    /**
+     * Quote the dispatch of a message
+     */
+    quoteDispatch(params: Readonly<DispatchParams>): Promise<bigint>;
 
-/**
- * Storage service for message persistence
- */
-export type StorageService = Readonly<{
-  readonly saveMessage: (message: Readonly<HyperlaneMessage>) => Promise<void>;
-  readonly getMessage: (id: string) => Promise<Readonly<HyperlaneMessage> | undefined>;
-  readonly listMessages: (filter?: Readonly<MessageFilter>) => Promise<ReadonlyArray<HyperlaneMessage>>;
-  readonly getMessageStatus: (id: string) => Promise<"pending" | "delivered" | "failed">;
-}>;
+    /**
+     * Send tokens using Hyperlane's warp protocol
+     * @param params Parameters for sending warp tokens
+     * @returns Result of the warp token send operation
+     */
+    sendWarpTokens(params: Readonly<WarpSendParams>): Promise<Readonly<WarpSendResult>>;
+
+}

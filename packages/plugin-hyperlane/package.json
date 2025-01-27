@@ -17,7 +17,8 @@
     "dependencies": {
         "@elizaos/core": "workspace:*",
         "@hyperlane-xyz/sdk": "8.4.0",
-        "ethers": "^6.9.0"
+        "ethers": "^6.9.0",
+        "viem": "2.21.58"
     },
     "devDependencies": {
         "tsup": "8.3.5",
