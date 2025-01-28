@@ -5,6 +5,7 @@
  * Processes user commands to bridge tokens between supported chains using Hyperlane protocol.
  */
 
+import { HyperlaneService } from "@core/services/HyperlaneService";
 import {
     Action,
     elizaLogger,
@@ -14,8 +15,6 @@ import {
     ServiceType,
     State,
 } from "@elizaos/core";
-import { HyperlaneService } from "@core/services/HyperlaneService";
-import { validateTokenTransfer } from "@shared/validators/tokenValidators";
 
 export const bridgeAssetAction: Action = {
     name: "BRIDGE_ASSET",

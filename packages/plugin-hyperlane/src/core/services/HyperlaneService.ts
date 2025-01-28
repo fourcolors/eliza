@@ -7,75 +7,77 @@
  */
 
 import {
-    IAgentRuntime,
-    Service,
-    ServiceType,
-    elizaLogger,
+  Service,
+  AgentRuntime,
+  ServiceType as ServiceTypeEnum,
+  elizaLogger
 } from "@elizaos/core";
-import { GithubRegistry } from "@hyperlane-xyz/registry";
+import { GithubRegistry, warpRouteConfigs } from "@hyperlane-xyz/registry";
 import {
-    ChainMap,
-    ChainMetadata,
-    MultiProtocolProvider,
-    WarpCore,
+  ChainMap,
+  ChainMetadata,
+  MultiProtocolProvider,
+  WarpCore,
 } from "@hyperlane-xyz/sdk";
-import { WarpConfig } from "@core/types/warp";
-import { validateConfig } from "@shared/validators/createParamsValidator";
 
 /**
- * Context that the service will use for the lifetime of the agent.
+ * Context for Warp operations
  */
 interface WarpContext {
-    warpCore: WarpCore;
-    multiProvider: MultiProtocolProvider;
-    registry: GithubRegistry;
-    chainMetadata: ChainMap<ChainMetadata>;
+  warpCore: WarpCore;
+  multiProvider: MultiProtocolProvider;
+  registry: GithubRegistry;
+  chainMetadata: ChainMap<ChainMetadata>;
 }
 
 export class HyperlaneService extends Service {
-    static serviceType: ServiceType = ServiceType.HYPERLANE;
+  static serviceType: ServiceTypeEnum = ServiceTypeEnum.HYPERLANE;
 
-    private initialized: boolean = false;
-    private runtime: IAgentRuntime | null = null;
-    private warpContext: WarpContext | null = null;
+  private initialized: boolean = false;
+  private runtime: AgentRuntime | null = null;
+  private warpContext: WarpContext | null = null;
 
-    async initialize(runtime: IAgentRuntime): Promise<void> {
-        if (this.initialized) return;
+  constructor() {
+    super();
+  }
 
-        elizaLogger.log("Initializing HyperlaneService");
+  async initialize(runtime: AgentRuntime): Promise<void> {
+    if (this.initialized) return;
 
-        try {
-            const registry = new GithubRegistry();
+    elizaLogger.log("Initializing HyperlaneService");
 
-            const chainMetadata = await registry.getMetadata();
-            const multiProvider = new MultiProtocolProvider(chainMetadata);
+    try {
+      const registry = new GithubRegistry();
 
-            const warpCore = WarpCore.FromConfig(
-                multiProvider,
-                warpRouteConfigs
-            );
+      const chainMetadata = await registry.getMetadata();
+      const multiProvider = new MultiProtocolProvider(chainMetadata);
 
-            this.warpContext = {
-                registry,
-                warpCore,
-                multiProvider,
-                chainMetadata,
-            };
+      const warpCore = WarpCore.FromConfig(
+        multiProvider,
+        warpRouteConfigs
+      );
 
-            this.runtime = runtime;
-            this.initialized = true;
-            elizaLogger.log("WarpCore:", warpCore);
-            elizaLogger.log("HyperlaneService initialized");
-        } catch (error) {
-            elizaLogger.error("Failed to initialize HyperlaneService:", error);
-            throw error;
-        }
+      this.warpContext = {
+        registry,
+        warpCore,
+        multiProvider,
+        chainMetadata,
+      };
+
+      this.runtime = runtime;
+      this.initialized = true;
+      elizaLogger.log("WarpCore:", warpCore);
+      elizaLogger.log("HyperlaneService initialized");
+    } catch (error) {
+      elizaLogger.error("Failed to initialize HyperlaneService:", error);
+      throw error;
     }
+  }
 
-    public getWarpContext(): WarpContext {
-        if (!this.initialized || !this.warpContext) {
-            throw new Error("HyperlaneService not initialized");
-        }
-        return this.warpContext;
+  public getWarpContext(): WarpContext {
+    if (!this.initialized || !this.warpContext) {
+      throw new Error("HyperlaneService not initialized");
     }
+    return this.warpContext;
+  }
 }

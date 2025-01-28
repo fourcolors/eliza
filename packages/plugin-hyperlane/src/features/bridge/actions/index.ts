@@ -1,2 +1,1 @@
-export * from './bridgeAsset';
-export * from './verifyTransfer';
+export * from "./bridgeAsset";
