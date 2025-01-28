@@ -9,16 +9,12 @@
 import { assembleWarpCoreConfig } from "@core/utils";
 import { assembleChainMetadata } from "@core/utils/metadata";
 import {
-    Service,
     AgentRuntime,
+    Service,
     ServiceType as ServiceTypeEnum,
     elizaLogger,
 } from "@elizaos/core";
-import {
-    GithubRegistry,
-    IRegistry,
-    warpRouteConfigs,
-} from "@hyperlane-xyz/registry";
+import { GithubRegistry, IRegistry } from "@hyperlane-xyz/registry";
 import {
     ChainMap,
     ChainMetadata,
@@ -76,26 +72,15 @@ export class HyperlaneService extends Service {
     private runtime: AgentRuntime | null = null;
     private warpContext: WarpContext | null = null;
 
-    constructor() {
-        super();
-    }
-
     async initialize(runtime: AgentRuntime): Promise<void> {
         if (this.initialized) return;
 
-        elizaLogger.log("Initializing HyperlaneService");
+        elizaLogger.log("Initializing HyperlaneService...");
 
         try {
+            const githubRegistry = new GithubRegistry();
             const { registry, warpCore, multiProvider, chainMetadata } =
-                await initWarpContext(new GithubRegistry(), {});
-
-            // const chainMetadata = await registry.getMetadata();
-            // const multiProvider = new MultiProtocolProvider(chainMetadata);
-
-            // const warpCore = WarpCore.FromConfig(
-            //     multiProvider,
-            //     warpRouteConfigs
-            // );
+                await initWarpContext(githubRegistry, {});
 
             this.warpContext = {
                 registry,
@@ -106,9 +91,8 @@ export class HyperlaneService extends Service {
 
             this.runtime = runtime;
             this.initialized = true;
-            elizaLogger.log("WarpCore:", warpCore);
-            elizaLogger.log("HyperlaneService initialized");
         } catch (error) {
+            console.log("Failed to initialize HyperlaneService:", error);
             elizaLogger.error("Failed to initialize HyperlaneService:", error);
             throw error;
         }
