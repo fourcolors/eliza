@@ -7,7 +7,7 @@
 
 import { HyperlaneService } from "@core/services/HyperlaneService";
 import { Plugin } from "@elizaos/core";
-import { bridgeAssetAction } from "@features/bridge/actions";
+import { bridgeAssetAction } from "@features/warp/actions";
 
 export const hyperlanePlugin: Plugin = {
     name: "hyperlane",
