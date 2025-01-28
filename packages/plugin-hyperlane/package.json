@@ -16,17 +16,21 @@
     ],
     "dependencies": {
         "@elizaos/core": "workspace:*",
+        "@hyperlane-xyz/registry": "^7.1.0",
         "@hyperlane-xyz/sdk": "8.4.0",
+        "@hyperlane-xyz/utils": "^8.4.0",
         "ethers": "^6.9.0",
         "viem": "2.21.58"
     },
     "devDependencies": {
+        "tsc-alias": "^1.8.10",
         "tsup": "8.3.5",
         "tsx": "^4.19.2",
+        "typescript": "^5.0.0",
         "vitest": "1.1.0"
     },
     "scripts": {
-        "build": "tsup --format esm --dts",
+        "build": "tsup --format esm --dts && tsc-alias -p tsconfig.json",
         "dev": "tsup --format esm --dts --watch",
         "test": "vitest",
         "test:token": "tsx scripts/test-token-transfer.ts",

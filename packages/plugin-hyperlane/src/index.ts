@@ -1,25 +1,20 @@
-import { Plugin } from "@elizaos/core";
-import { bridgeAssetAction } from "./actions/bridgeAsset";
-import { HyperlaneService } from "./services/HyperlaneService";
-
 /**
- * Hyperlane Plugin
- *
- * A plugin for the Eliza platform that enables cross-chain token transfers
- * using the Hyperlane messaging protocol. This plugin provides:
- *
- * - Bridge Asset Action: Transfer tokens between supported chains
- * - Hyperlane Service: Manages cross-chain messaging and token transfers
+ * /packages/plugin-hyperlane/src/index.ts
+ * 
+ * Main entry point for the Hyperlane plugin.
+ * Exports feature-organized functionality for cross-chain messaging and token transfers.
  */
 
-// Create a singleton instance of HyperlaneService to be shared across the plugin
-export const hyperlaneService = new HyperlaneService();
+// Core exports
+export * from "@core/services/HyperlaneService";
+export * from "@core/types";
+export * from "@core/config";
 
-export const hyperlanePlugin: Plugin = {
-    name: "hyperlane",
-    description: "Plugin for interacting with Hyperlane protocol",
-    actions: [bridgeAssetAction],
-    services: [hyperlaneService],
-};
+// Feature exports
+export * from "@features/bridge/actions";
+export * from "@features/messaging/actions";
+export * from "@features/warp/actions";
+export * from "@features/chain/actions";
 
-export default hyperlanePlugin;
+// Plugin export
+export { hyperlanePlugin as default } from "./plugin";

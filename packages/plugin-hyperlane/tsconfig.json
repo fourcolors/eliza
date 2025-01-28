@@ -2,7 +2,13 @@
     "extends": "../../packages/core/tsconfig.json",
     "compilerOptions": {
         "outDir": "dist",
-        "rootDir": "src"
+        "rootDir": "src",
+        "baseUrl": ".",
+        "paths": {
+            "@core/*": ["src/core/*"],
+            "@shared/*": ["src/shared/*"],
+            "@features/*": ["src/features/*"]
+        }
     },
     "include": ["src"]
 }

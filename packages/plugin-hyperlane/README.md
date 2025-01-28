@@ -1,13 +1,47 @@
-# @elizaos/plugin-hyperlane
+# Hyperlane Plugin for Eliza
 
-Hyperlane plugin for Eliza, enabling cross-chain messaging and asset transfers.
+A plugin for the Eliza platform that enables cross-chain token transfers and messaging using the Hyperlane protocol.
 
 ## Features
 
-- Cross-chain message passing using Hyperlane protocol
-- Message verification using Interchain Security Module (ISM)
-- Asset transfers via Warp Routes
-- Leverages Eliza's core storage for message persistence and state management
+### Bridge
+- Token transfers between supported chains
+- Transfer verification and status tracking
+- Support for native and wrapped tokens
+
+### Messaging
+- Cross-chain message sending
+- Message verification and retrieval
+- Support for arbitrary message payloads
+
+### Warp Routes
+- Dynamic warp route configuration
+- Route initialization and management
+- Chain and token validation
+
+### Chain Management
+- Chain status monitoring
+- RPC endpoint management
+- Transaction tracking
+
+## Project Structure
+
+```
+src/
+├── features/           # Feature-specific functionality
+│   ├── bridge/         # Token bridging
+│   ├── messaging/      # Cross-chain messaging
+│   ├── warp/          # Warp route management
+│   └── chain/         # Chain management
+├── core/              # Core functionality
+│   ├── services/      # Core services
+│   ├── config/        # Global configuration
+│   └── types/         # Core types
+└── shared/            # Shared utilities
+    ├── constants/     # Global constants
+    ├── utils/         # Shared utilities
+    └── validators/    # Common validators
+```
 
 ## Installation
 
@@ -18,63 +52,14 @@ pnpm add @elizaos/plugin-hyperlane
 ## Usage
 
 ```typescript
-import { HyperlanePlugin } from '@elizaos/plugin-hyperlane'
+import { hyperlanePlugin } from '@elizaos/plugin-hyperlane';
 
-// Initialize plugin
-const plugin = new HyperlanePlugin()
+// Initialize the plugin
+agent.use(hyperlanePlugin);
 
-// Register with Eliza runtime
-runtime.registerPlugin(plugin)
-
-// Send a cross-chain message
-await runtime.executeAction('hyperlane.sendMessage', {
-  recipient: '0x123...',
-  body: 'Hello cross-chain world!',
-  destinationChain: 'ethereum'
-})
-
-// Verify a received message
-await runtime.executeAction('hyperlane.verifyMessage', {
-  messageId: '123'
-})
-```
-
-## Architecture
-
-The plugin integrates with several core components:
-
-1. **Eliza Core Services**
-   - Uses Eliza's core storage service for message persistence
-   - Leverages core service management for dependency injection
-   - Integrates with core action handling system
-
-2. **Hyperlane Protocol**
-   - Mailbox contracts for message passing
-   - ISM for message verification
-   - Warp Routes for asset transfers
-
-3. **Plugin Components**
-   - Message dispatch provider
-   - ISM provider
-   - Message verification handler
-   - Asset transfer handler
-
-## Configuration
-
-```typescript
-{
-  // Chain configuration
-  domains: [1, 2], // Chain IDs
-  providers: [
-    ['ethereum', 'https://eth-mainnet.provider.com'],
-    ['optimism', 'https://opt-mainnet.provider.com']
-  ],
-  
-  // Security settings
-  defaultIsm: '0x123...', // Default ISM address
-  defaultHook: myHook, // Optional post-dispatch hook
-  requiredHook: myRequiredHook, // Required post-dispatch hook
-}
+// The plugin will now handle commands like:
+// "transfer 1 ETH to optimism"
+// "send message to arbitrum"
 ```
 
 ## Development
