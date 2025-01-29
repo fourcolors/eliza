@@ -7,12 +7,12 @@
 
 import { HyperlaneService } from "@core/services/HyperlaneService";
 import { Plugin } from "@elizaos/core";
-import { bridgeAssetAction } from "@features/warp/actions";
+import { transferAssetAction } from "@features/warp/actions";
 
 export const hyperlanePlugin: Plugin = {
     name: "hyperlane",
     description: "Plugin for interacting with Hyperlane protocol",
-    actions: [bridgeAssetAction],
+    actions: [transferAssetAction],
     services: [new HyperlaneService()],
 };
 
