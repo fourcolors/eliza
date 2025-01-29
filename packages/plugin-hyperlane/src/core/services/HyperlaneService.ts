@@ -6,8 +6,7 @@
  * Acts as the central service for all Hyperlane operations across features.
  */
 
-import { assembleWarpCoreConfig } from "@core/utils";
-import { assembleChainMetadata } from "@core/utils/metadata";
+import { assembleChainMetadata, assembleWarpCoreConfig } from "@core/utils";
 import {
     AgentRuntime,
     Service,
@@ -21,39 +20,6 @@ import {
     MultiProtocolProvider,
     WarpCore,
 } from "@hyperlane-xyz/sdk";
-
-async function initWarpContext(
-    registry: IRegistry,
-    storeMetadataOverrides: ChainMap<Partial<ChainMetadata> | undefined>
-) {
-    try {
-        const coreConfig = assembleWarpCoreConfig();
-        const chainsInTokens = Array.from(
-            new Set(coreConfig.tokens.map((t) => t.chainName))
-        );
-        // Pre-load registry content to avoid repeated requests
-        await registry.listRegistryContent();
-        const { chainMetadata, chainMetadataWithOverrides } =
-            await assembleChainMetadata(
-                chainsInTokens,
-                registry,
-                storeMetadataOverrides
-            );
-        const multiProvider = new MultiProtocolProvider(
-            chainMetadataWithOverrides
-        );
-        const warpCore = WarpCore.FromConfig(multiProvider, coreConfig);
-        return { registry, chainMetadata, multiProvider, warpCore };
-    } catch (error) {
-        elizaLogger.error("Error initializing warp context", error);
-        return {
-            registry,
-            chainMetadata: {},
-            multiProvider: new MultiProtocolProvider({}),
-            warpCore: new WarpCore(new MultiProtocolProvider({}), []),
-        };
-    }
-}
 
 /**
  * Context for Warp operations
@@ -79,11 +45,21 @@ export class HyperlaneService extends Service {
 
         try {
             const githubRegistry = new GithubRegistry();
-            const { registry, warpCore, multiProvider, chainMetadata } =
-                await initWarpContext(githubRegistry, {});
+            const coreConfig = assembleWarpCoreConfig();
+            const chainsInTokens = Array.from(
+                new Set(coreConfig.tokens.map((t) => t.chainName))
+            );
+
+            await githubRegistry.listRegistryContent();
+            const { chainMetadata, chainMetadataWithOverrides } =
+                await assembleChainMetadata(chainsInTokens, githubRegistry, {});
+            const multiProvider = new MultiProtocolProvider(
+                chainMetadataWithOverrides
+            );
+            const warpCore = WarpCore.FromConfig(multiProvider, coreConfig);
 
             this.warpContext = {
-                registry,
+                registry: githubRegistry,
                 warpCore,
                 multiProvider,
                 chainMetadata,
@@ -92,8 +68,13 @@ export class HyperlaneService extends Service {
             this.runtime = runtime;
             this.initialized = true;
         } catch (error) {
-            console.log("Failed to initialize HyperlaneService:", error);
             elizaLogger.error("Failed to initialize HyperlaneService:", error);
+            this.warpContext = {
+                registry: new GithubRegistry(),
+                chainMetadata: {},
+                multiProvider: new MultiProtocolProvider({}),
+                warpCore: new WarpCore(new MultiProtocolProvider({}), []),
+            };
             throw error;
         }
     }
