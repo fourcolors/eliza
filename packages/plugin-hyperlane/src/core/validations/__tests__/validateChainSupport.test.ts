@@ -5,11 +5,9 @@
  * by the Hyperlane protocol. The tests cover various scenarios including:
  * - Missing chain metadata
  * - Missing RPC endpoints
- * - AbacusWorks permission requirements
  * - Valid chain configurations
  */
 
-import { isAbacusWorksChain } from "@hyperlane-xyz/registry";
 import { ChainMetadata, ChainName, MultiProvider } from "@hyperlane-xyz/sdk";
 import { ProtocolType } from "@hyperlane-xyz/utils";
 import {
@@ -26,12 +24,8 @@ import {
     validateChainSupport,
 } from "../validateChainSupport";
 
-vi.mock("@hyperlane-xyz/registry", () => ({
-    isAbacusWorksChain: vi.fn(),
-}));
-
 describe("validateChainSupport", () => {
-    const mockChainId = "test-chain-1" as ChainName;
+    const mockChainName = "test-chain-1" as ChainName;
     let mockMultiProvider: {
         tryGetChainMetadata: MockInstance<[ChainName], ChainMetadata | null>;
         tryGetProtocol: MockInstance<[ChainName], ProtocolType>;
@@ -80,7 +74,7 @@ describe("validateChainSupport", () => {
 
         const result = validateChainSupport(
             mockMultiProvider as unknown as MultiProvider,
-            mockChainId
+            mockChainName
         );
 
         expect(result.isSupported).toBe(false);
@@ -94,7 +88,6 @@ describe("validateChainSupport", () => {
         interface TestCase {
             name: string;
             metadata: ChainMetadata;
-            isAbacusWorks: boolean;
             protocol: ProtocolType;
             expectedResult: ChainValidationResult;
         }
@@ -103,7 +96,6 @@ describe("validateChainSupport", () => {
             {
                 name: "returns unsupported when chain has no RPC endpoints",
                 metadata: createMockChainMetadata({ rpcUrls: [] }),
-                isAbacusWorks: false,
                 protocol: "ethereum" as ProtocolType,
                 expectedResult: {
                     isSupported: false,
@@ -116,24 +108,8 @@ describe("validateChainSupport", () => {
                 },
             },
             {
-                name: "returns unsupported when chain requires AbacusWorks",
-                metadata: createMockChainMetadata(),
-                isAbacusWorks: true,
-                protocol: "ethereum" as ProtocolType,
-                expectedResult: {
-                    isSupported: false,
-                    errors: ["Chain requires Abacus Works permissions"],
-                    metadata: {
-                        name: "Test Chain",
-                        displayName: "Test Chain Display",
-                        protocol: "ethereum",
-                    },
-                },
-            },
-            {
                 name: "returns supported for valid chain with RPC endpoints",
                 metadata: createMockChainMetadata(),
-                isAbacusWorks: false,
                 protocol: "ethereum" as ProtocolType,
                 expectedResult: {
                     isSupported: true,
@@ -148,7 +124,6 @@ describe("validateChainSupport", () => {
             {
                 name: "handles chain without display name",
                 metadata: createMockChainMetadata({ displayName: undefined }),
-                isAbacusWorks: false,
                 protocol: "ethereum" as ProtocolType,
                 expectedResult: {
                     isSupported: true,
@@ -162,25 +137,18 @@ describe("validateChainSupport", () => {
             },
         ];
 
-        testCases.forEach(
-            ({ name, metadata, isAbacusWorks, protocol, expectedResult }) => {
-                it(name, () => {
-                    mockMultiProvider.tryGetChainMetadata.mockReturnValue(
-                        metadata
-                    );
-                    mockMultiProvider.tryGetProtocol.mockReturnValue(protocol);
-                    vi.mocked(isAbacusWorksChain).mockReturnValue(
-                        isAbacusWorks
-                    );
+        testCases.forEach(({ name, metadata, protocol, expectedResult }) => {
+            it(name, () => {
+                mockMultiProvider.tryGetChainMetadata.mockReturnValue(metadata);
+                mockMultiProvider.tryGetProtocol.mockReturnValue(protocol);
 
-                    const result = validateChainSupport(
-                        mockMultiProvider as unknown as MultiProvider,
-                        mockChainId
-                    );
+                const result = validateChainSupport(
+                    mockMultiProvider as unknown as MultiProvider,
+                    mockChainName
+                );
 
-                    expect(result).toEqual(expectedResult);
-                });
-            }
-        );
+                expect(result).toEqual(expectedResult);
+            });
+        });
     });
 });
