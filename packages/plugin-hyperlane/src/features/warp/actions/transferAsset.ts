@@ -6,9 +6,9 @@
  */
 
 import { HyperlaneService } from "@core/services/HyperlaneService";
+import { validateChainSupport } from "@core/validations/validateChainSupport";
 import {
     Action,
-    elizaLogger,
     HandlerCallback,
     IAgentRuntime,
     Memory,
@@ -21,8 +21,30 @@ export const transferAssetAction: Action = {
     similes: ["SEND_ASSET", "MOVE_ASSET", "WARP_ASSET", "BRIDGE_ASSET"],
     description: "Transfer an asset from one chain to another using Hyperlane",
     validate: async (runtime: IAgentRuntime, message: Memory) => {
-        // For now, we don't need to validate, lets just try to make the transfer happen
-        return true;
+        const hyp = runtime.getService<HyperlaneService>(ServiceType.HYPERLANE);
+        const warpContext = hyp.getWarpContext();
+        const originChain = hyp.getOriginChainName();
+        // TODO: Add destination chain by...
+        // 1. Create a new template file that will take a prompt warp core configuration
+        // 2. Call with the prompt, the prompt will extract which chain the user wanted from the configuration file and return the name or return null if the chain is not supported
+        // 3. It will then set the desitation chain in the service and return it
+        // const destinationChain = hyp.getDestinationChainName();
+        // For now lets hard code the destinatio to be
+        const destinationChain = "basesepolia";
+        const { multiProvider, warpCore } = warpContext;
+
+        // 1. Chain and Protocol Validations
+        const originValidation = await validateChainSupport(
+            multiProvider,
+            originChain
+        );
+
+        const destValidation = await validateChainSupport(
+            multiProvider,
+            destinationChain
+        );
+
+        return originValidation.isSupported && destValidation.isSupported;
     },
     handler: async (
         runtime: IAgentRuntime,
@@ -33,6 +55,8 @@ export const transferAssetAction: Action = {
     ) => {
         const hyp = runtime.getService<HyperlaneService>(ServiceType.HYPERLANE);
         const warpContext = hyp.getWarpContext();
+        const { multiProvider } = warpContext;
+
         callback({
             text: `Available chains for transfers: ${Object.keys(warpContext.chainMetadata).join(", ")}`,
         });
@@ -48,42 +72,9 @@ export const transferAssetAction: Action = {
                 },
             },
             {
-                user: "{{user2}}",
-                content: {
-                    text: "I'll help you transfer 100 USDC to Optimism using Hyperlane. Let me prepare the transaction.",
-                    action: "TRANSFER_ASSET",
-                },
-            },
-        ],
-        [
-            {
-                user: "{{user1}}",
-                content: {
-                    text: "Can you help me transfer my ETH from Arbitrum to Base?",
-                },
-            },
-            {
-                user: "{{user2}}",
-                content: {
-                    text: "I'll help you transfer your ETH from Arbitrum to Base using Hyperlane's secure messaging protocol.",
-                    action: "TRANSFER_ASSET",
-                },
-            },
-        ],
-        [
-            {
-                user: "{{user1}}",
-                content: {
-                    text: "I want to warp 50 WETH from Polygon to Avalanche",
-                },
-            },
-            {
-                user: "{{user2}}",
-                content: {
-                    text: "I'll help you transfer 50 WETH from Polygon to Avalanche. Let me set up the Hyperlane warp route.",
-                    action: "TRANSFER_ASSET",
-                },
+                assistant:
+                    "I'll help you transfer 100 USDC from Ethereum to Optimism using Hyperlane.",
             },
         ],
     ],
-} as Action;
+};
