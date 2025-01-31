@@ -1,0 +1,239 @@
+# Commit Review Process
+Ensures high-quality, secure commits through a rigorous, automated, and manual review process.  
+Below is an expanded and refined checklist incorporating best practices for code quality, security, performance, and maintainability.
+
+---
+
+## 1. Code Quality & Safety
+
+### 1.a. Bug Prevention
+- [ ] **Off-by-one & Bounds**: No off-by-one errors in loops or array access; arrays and collections are accessed within valid indices.
+- [ ] **Initialization & Null Checks**: All variables and references are properly initialized before use; null/undefined checks exist for optional values.
+- [ ] **Type Safety**: No unsafe type coercion or unchecked type assertions; ensure correct usage of generics or type constraints.
+- [ ] **Error Handling**: Error handling for all async operations (promises, callbacks); no silent catches or swallowing of errors.
+- [ ] **Memory Safety**: No memory leaks from unmanaged resources; no excessive global variables.
+- [ ] **Edge Cases**: Check for boundary conditions (e.g., empty arrays, large inputs, negative values, zero values).
+
+### 1.b. Complexity Management
+- [ ] **Spaghetti Code Avoidance**: Code is well-structured, avoids overly complicated or nested logic (prefer < 3 nesting levels).
+- [ ] **Single Responsibility**: Functions and modules have a clear, singular purpose; large functions are broken down.
+- [ ] **No Duplicate Code**: Common logic is refactored; utilize helper/utilities as needed.
+- [ ] **Clear Naming**: Variables, functions, and modules use descriptive, consistent naming conventions.
+- [ ] **Constants**: No hardcoded “magic numbers” or strings; use named constants or config variables.
+
+### 1.c. Concurrency & Async
+- [ ] **Race Conditions**: Safeguards against race conditions in shared state or async flows.
+- [ ] **Async/Await**: Proper error handling in async/await; no unhandled promise rejections.
+- [ ] **Resource Cleanup**: Open connections and subscriptions closed in error and success paths alike.
+- [ ] **Safe Ordering**: Dependent async operations run in the correct order; includes fallback or retry logic where applicable.
+- [ ] **Timeouts**: Timeouts or cancellation strategies exist for long-running async tasks.
+
+---
+
+## 2. Functional Programming & Immutability
+
+### 2.a. Pure Functions
+- [ ] **No Side Effects**: Pure functions do not alter external state or global variables.
+- [ ] **Read-Only Params**: Function parameters are treated as immutable; no mutation of input objects/arrays.
+- [ ] **Predictable Returns**: Same inputs yield same outputs; no hidden data fetches or I/O operations in pure functions.
+
+### 2.b. Immutable Data
+- [ ] **Immutable Structures**: Preference for immutable data structures or usage of `readonly` in TypeScript.
+- [ ] **No In-Place Mutation**: Use spread operators or functional utilities (e.g., `.map`, `.filter`) rather than in-place array/object modifications.
+- [ ] **Clear Immutability**: Proper use of `readonly` modifiers where possible; no direct property reassignments on existing objects.
+
+---
+
+## 3. Security Analysis
+
+### 3.a. Input Validation
+- [ ] **Sanitization**: All external/user input is sanitized or escaped (e.g., to prevent SQL injection or XSS).
+- [ ] **Bounds & Types**: Validate input sizes/lengths, expected data types, and content (no malicious scripts or HTML).
+- [ ] **No `eval()`**: Avoid using `eval()` or `Function` constructors; if required, thoroughly justify and secure.
+
+### 3.b. Data Protection
+- [ ] **No Sensitive Data in Logs**: Ensure passwords, access tokens, or private keys are not logged.
+- [ ] **Encryption**: Sensitive data in transit or at rest is encrypted using secure algorithms (AES, RSA, etc.).  
+- [ ] **Hardcoded Secrets**: No private keys or credentials committed in plaintext; use environment variables or secret stores.
+- [ ] **Secure RNG**: Use cryptographically secure random functions where required.
+
+### 3.c. Access Control & Reflection
+- [ ] **Authorization Checks**: Proper permission checks exist for privileged functionality; no unauthorized escalations.
+- [ ] **Rate Limiting**: For public APIs or endpoints, ensure rate limits or throttling to mitigate brute force or DOS attacks.
+- [ ] **Session & Token Security**: Session tokens validated and secured (e.g., proper cookie flags, short TTL).
+- [ ] **Reflection Calls**: No unsafe reflection or dynamic classloading that can lead to injection vulnerabilities.
+
+---
+
+## 4. Performance & Scalability
+
+### 4.a. Algorithm Efficiency
+- [ ] **Complexity**: Algorithms chosen are appropriate for data sizes; no unbounded O(n²) loops if avoidable.
+- [ ] **Caching / Memoization**: Repeated computations or expensive calls consider caching or memoization.
+- [ ] **Lazy Loading**: Defer heavy operations or data loading until needed.
+
+### 4.b. Resource Management
+- [ ] **Memory Usage**: Avoid large object allocations in tight loops; check for potential memory leaks in closures or async flows.
+- [ ] **Connection Pooling**: Proper configuration of connection pools or concurrency settings in DB, queue, or service calls.
+- [ ] **Cleanup**: Freed resources after use; ensure `finally` blocks or equivalent are used for guaranteed cleanup.
+
+### 4.c. Network & I/O
+- [ ] **Batching & Pagination**: Large data sets are paginated or batched to minimize network overhead.
+- [ ] **Retries & Timeouts**: External calls (API, DB, etc.) have error retry strategies and timeouts to handle slow or failing services.
+- [ ] **Streaming**: Large data sets or file operations use streaming rather than loading entire content in memory.
+
+---
+
+## 5. Documentation & Logging
+
+### 5.a. Code Documentation
+- [ ] **Docstrings**: All public APIs, complex algorithms, and data structures are well-documented.
+- [ ] **Edge Cases**: Document assumptions, expected edge cases, or special conditions.
+- [ ] **Version Compatibility**: Note if the change only applies to certain versions or introduces backward incompatibilities.
+
+### 5.b. Logging & Monitoring
+- [ ] **Log Levels**: Proper usage of debug, info, warn, error, etc.; no spamming logs with overly verbose messages.
+- [ ] **No Sensitive Data**: Logs do not contain credentials, tokens, or personal user info.
+- [ ] **Context & Correlation**: Error logs provide enough context (request ID, user ID, etc.) for debugging.
+
+### 5.c. Architecture Notes
+- [ ] **Design Decisions**: Key architectural or design choices are explained in a dedicated doc or comment block.
+- [ ] **Dependencies**: Document external service dependencies, library constraints, or setup instructions.
+- [ ] **Deployment**: Changes to deployment flow or environment variables are clearly noted.
+
+---
+
+## 6. Dependency Management
+
+### 6.a. Version Control
+- [ ] **Pinned Versions**: Dependencies are pinned or use stable version ranges to avoid unexpected upgrades.
+- [ ] **No Deprecated Packages**: Identify and replace or upgrade deprecated packages; check official migration paths.
+- [ ] **Security Advisories**: Regularly check for known vulnerabilities; run `pnpm audit` or equivalent.
+
+### 6.b. Conflicts & Updates
+- [ ] **Peer Dependencies**: Confirm that required peer dependencies are installed and correctly versioned.
+- [ ] **Insecure Dependencies**: Ensure no libraries with critical CVEs are used without patches or mitigations.
+- [ ] **Optional Dependencies**: Mark optional dependencies clearly; remove unused dependencies to minimize attack surface.
+
+---
+
+## 7. Testing & Coverage
+
+### 7.a. Test Quality
+- [ ] **Unit Tests**: All new or changed code has corresponding unit tests, covering typical and edge cases.
+- [ ] **Integration Tests**: Verify interactions between modules or external services; ensure test environment is configured.
+- [ ] **Async & Race Conditions**: Test concurrency or async flows where possible; confirm no data races.
+
+### 7.b. Test Stability
+- [ ] **No Flaky Tests**: Tests produce consistent results; no undue reliance on timing or network calls.
+- [ ] **Isolation**: Tests do not rely on shared global state; cleanup is done between tests.
+- [ ] **Naming & Conventions**: Test names are descriptive and consistent, clarifying what behavior is verified.
+
+### 7.c. Coverage Analysis
+- [ ] **Branch Coverage**: Aim for at least 80% branch coverage; critical paths closer to 100%.
+- [ ] **Error Handlers**: Exceptions and error states have dedicated tests (e.g., thrown errors, fallback logic).
+- [ ] **UI & API**: If applicable, confirm UI tests cover major user flows; API endpoints are validated.
+
+---
+
+## 8. Conventional Commits & Release Notes
+
+### 8.a. Commit Message Format
+- [ ] **Conventional Commits**: Use `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`, etc., as prefixes.
+- [ ] **References**: Link to relevant issue or task numbers (`#123`, `JIRA-XYZ`).
+- [ ] **Breaking Changes**: Clearly state `BREAKING CHANGE:` if changes are incompatible or require special migration steps.
+
+### 8.b. Change Scope
+- [ ] **Single Responsibility**: Each commit addresses one concern; minimal unrelated changes.
+- [ ] **Migration Steps**: If schema or config changes are introduced, mention them in commit body or separate migration note.
+- [ ] **Release Notes**: Summarize features, fixes, or updates that users need to know; highlight any special upgrade paths.
+
+---
+
+## Review Process
+
+### 1. Initial Assessment
+```bash
+# Get an overview of staged changes
+git diff --staged --stat
+
+# Detailed diff for manual inspection
+git diff --staged
+
+# Quick check for sensitive data
+git diff --staged | grep -i "password\|secret\|key\|token"
+
+2. Automated Checks
+# Lint check
+pnpm lint
+
+# Type check
+pnpm type-check
+
+# Run tests (only run this in the hyperlane plugin folder)
+pnpm test
+
+# Check coverage
+pnpm test:coverage
+
+# Build check
+pnpm build
+
+
+3. Security Scan
+# Audit for known vulnerabilities
+pnpm audit
+
+# Attempt to fix vulnerabilities automatically
+pnpm audit fix
+
+# Check outdated dependencies
+pnpm outdated
+
+
+4. Performance Analysis
+	•	Performance Tests: Run performance or load tests if available.
+	•	Bundle Size: Check bundle size impact and ensure tree shaking or code splitting is used as needed.
+	•	Profile: Evaluate memory usage, CPU hotspots, or DB queries.
+
+   Review Response Template
+	1.	Critical Issues
+	•	Security vulnerabilities (injection, leaked secrets, etc.)
+	•	Breaking changes without documentation
+	•	Performance regressions or severe resource leaks
+	•	Test failures
+	•	Missing or outdated documentation
+	2.	Improvements Required
+	•	Code quality issues (complex logic, duplication, etc.)
+	•	Additional test coverage needed (edge cases, concurrency)
+	•	Performance optimizations (unnecessary complexity, inefficient loops)
+	•	Security hardening (sanitize inputs, remove secrets)
+	•	Documentation updates
+	3.	Optional Enhancements
+	•	Refactoring suggestions or design patterns
+	•	Additional or improved test scenarios
+	•	Logging improvements (better context, no sensitive info)
+	•	Architectural documentation or code comments
+
+
+   Final Verification
+
+1. Pre-Commit Checklist
+	•	All review items addressed or acknowledged
+	•	Tests passing locally and in CI
+	•	Documentation updated and accurate
+	•	Security scans passed or mitigations in place
+	•	Performance validated for new changes
+	•	Dependency checks are up to date
+
+2. Commit Preparation
+	•	Code changes squashed if necessary
+	•	Commit messages follow conventional format
+	•	Breaking changes or migrations clearly documented
+	•	Issue references included in commit body
+
+3. Post-Commit Tasks
+	•	Update release notes and changelogs
+	•	Notify relevant teams or stakeholders
+	•	Plan deployment strategy if needed
+	•	Validate changes in staging/production environments
