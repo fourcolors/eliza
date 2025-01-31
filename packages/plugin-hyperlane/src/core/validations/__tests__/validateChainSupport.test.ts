@@ -8,7 +8,7 @@
  * - Valid chain configurations
  */
 
-import { ChainMetadata, ChainName, MultiProvider } from "@hyperlane-xyz/sdk";
+import { ChainMetadata, ChainName, MultiProtocolProvider } from "@hyperlane-xyz/sdk";
 import { ProtocolType } from "@hyperlane-xyz/utils";
 import {
     afterEach,
@@ -25,11 +25,10 @@ import {
 } from "../validateChainSupport";
 
 describe("validateChainSupport", () => {
-    const mockChainName = "test-chain-1" as ChainName;
-    let mockMultiProvider: {
-        tryGetChainMetadata: MockInstance<[ChainName], ChainMetadata | null>;
-        tryGetProtocol: MockInstance<[ChainName], ProtocolType>;
-    };
+    const mockChainName = "test-chain" as ChainName;
+    let mockMultiProvider: MultiProtocolProvider;
+    let mockGetMetadata: MockInstance<[ChainName], ChainMetadata | null>;
+    let mockGetProtocol: MockInstance<[ChainName], ProtocolType>;
 
     const createMockChainMetadata = (
         overrides: Partial<ChainMetadata> = {}
@@ -59,29 +58,30 @@ describe("validateChainSupport", () => {
     });
 
     beforeEach(() => {
+        mockGetMetadata = vi.fn();
+        mockGetProtocol = vi.fn();
         mockMultiProvider = {
-            tryGetChainMetadata: vi.fn(),
-            tryGetProtocol: vi.fn(),
-        };
+            tryGetChainMetadata: mockGetMetadata,
+            tryGetProtocol: mockGetProtocol
+        } as unknown as MultiProtocolProvider;
     });
 
     afterEach(() => {
-        vi.clearAllMocks();
+        vi.resetAllMocks();
     });
 
-    it("returns unsupported when chain metadata not found", () => {
-        mockMultiProvider.tryGetChainMetadata.mockReturnValue(null);
+    it("returns unsupported when chain metadata is not found", () => {
+        mockGetMetadata.mockReturnValue(null);
 
         const result = validateChainSupport(
-            mockMultiProvider as unknown as MultiProvider,
+            mockMultiProvider,
             mockChainName
         );
 
-        expect(result.isSupported).toBe(false);
-        expect(result.errors).toEqual([
-            "Chain not found in Hyperlane registry",
-        ]);
-        expect(result.metadata).toBeUndefined();
+        expect(result).toEqual({
+            isSupported: false,
+            errors: ["Chain not found in Hyperlane registry"],
+        });
     });
 
     describe("chain support validation", () => {
@@ -139,11 +139,11 @@ describe("validateChainSupport", () => {
 
         testCases.forEach(({ name, metadata, protocol, expectedResult }) => {
             it(name, () => {
-                mockMultiProvider.tryGetChainMetadata.mockReturnValue(metadata);
-                mockMultiProvider.tryGetProtocol.mockReturnValue(protocol);
+                mockGetMetadata.mockReturnValue(metadata);
+                mockGetProtocol.mockReturnValue(protocol);
 
                 const result = validateChainSupport(
-                    mockMultiProvider as unknown as MultiProvider,
+                    mockMultiProvider,
                     mockChainName
                 );
 
