@@ -34,12 +34,12 @@ export const transferAssetAction: Action = {
         const { multiProvider, warpCore } = warpContext;
 
         // 1. Chain and Protocol Validations
-        const originValidation = await validateChainSupport(
+        const originValidation = validateChainSupport(
             multiProvider,
             originChain
         );
 
-        const destValidation = await validateChainSupport(
+        const destValidation = validateChainSupport(
             multiProvider,
             destinationChain
         );
@@ -72,8 +72,10 @@ export const transferAssetAction: Action = {
                 },
             },
             {
-                assistant:
-                    "I'll help you transfer 100 USDC from Ethereum to Optimism using Hyperlane.",
+                user: "assistant",
+                content: {
+                    text: "I'll help you transfer 100 USDC from Ethereum to Optimism using Hyperlane.",
+                },
             },
         ],
     ],
